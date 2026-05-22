@@ -1,50 +1,114 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT
+==================
+Version change: blank template → 1.0.0 (initial ratification)
+
+Principles added (all new):
+  I.   TypeScript Strict Mode (NON-NEGOTIABLE)
+  II.  Test-First Development (NON-NEGOTIABLE)
+  III. Next.js App Router Discipline
+  IV.  Game Logic Purity
+  V.   Accessibility Baseline (WCAG 2.1 AA)
+
+Sections added:
+  - Technical Constraints (Performance Budget, Puzzle Data Integrity, Styling)
+  - Quality Gates
+
+Templates reviewed:
+  ✅ .specify/templates/plan-template.md      — no changes required
+  ✅ .specify/templates/spec-template.md      — no changes required
+  ⚠  .specify/templates/tasks-template.md    — "Tests are OPTIONAL" note conflicts
+                                                with Principle II; updated with
+                                                constitution-aware clarification
+  ✅ .specify/templates/constitution-template.md — source template; not modified
+  ✅ specs/001-rankle-daily-game/plan.md      — Constitution Check section updated
+                                                to reflect ratified gates
+
+Deferred TODOs: None — all fields resolved.
+-->
+
+# Rankle Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. TypeScript Strict Mode (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+`"strict": true` in `tsconfig.json` at all times — never downgraded. No `any`
+type; use `unknown` + type narrowing or explicit generics. All function
+parameters and return types MUST be explicitly annotated. `@ts-ignore` is
+forbidden without an inline comment explaining the exceptional case.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Test-First Development (NON-NEGOTIABLE)
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Red-Green-Refactor cycle is mandatory: tests MUST be written and confirmed
+failing before implementation begins.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+- `src/lib/` pure logic: unit tests written before each function is implemented
+- Components: RTL component test written before each component is implemented
+- API routes: contract test in `tests/integration/` written before route
+  implementation
+- E2E: `tests/e2e/game-flow.spec.ts` MUST cover each user story before it ships
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Coverage gate**: `vitest --coverage` MUST report ≥ 80% coverage globally
+across all `src/` files. A failing threshold blocks merge.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. Next.js App Router Discipline
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Server Components are the default; `'use client'` MUST only be added at the
+**lowest tree boundary** that genuinely requires interactivity or browser APIs.
+Page- and layout-level `'use client'` is forbidden unless every child of that
+boundary requires client-side rendering — push the boundary down. `useEffect`
+MUST NOT be used for data fetching where a server-side or async component
+approach exists. API routes are GET-only; any write endpoint requires a
+documented security justification before creation.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### IV. Game Logic Purity
+
+All code in `src/lib/` MUST be pure functions: deterministic output, no side
+effects. `localStorage` MUST only be accessed via `src/lib/game-state.ts` —
+direct calls in components are forbidden. UTC date and puzzle number
+calculations MUST be exclusively handled by `src/lib/puzzle.ts`. Scoring MUST
+always be recomputed from the `guesses[]` source of truth; never mutated
+in-place.
+
+### V. Accessibility Baseline (WCAG 2.1 AA)
+
+dnd-kit keyboard support MUST remain active — never disabled or patched out.
+State (bull / miss) MUST be conveyed by shape or icon in addition to color —
+color alone is not sufficient. All interactive elements MUST be reachable and
+operable via keyboard Tab order. `aria-live` regions MUST announce stat-solved
+and game-complete events to screen readers.
+
+## Technical Constraints
+
+**Performance Budget**: Puzzle API p95 ≤ 200ms; `Cache-Control` headers MUST
+be set on every API response. Page TTI ≤ 1.5s on a 4G connection. Drag
+animations MUST use CSS `transform` only — layout-triggering properties
+(`top`, `left`, `width`) during drag are forbidden.
+
+**Puzzle Data Integrity**: Every new puzzle file MUST satisfy: solution arrays
+are valid permutations of `countries[*].id`; no ties in stat values; stats
+span ≥ 2 distinct categories. The authoring checklist in
+`contracts/puzzle-api.md` MUST be followed before merging any puzzle file.
+
+**Styling**: Tailwind utility classes only; no CSS-in-JS, no inline `style={}`
+props. Custom CSS is confined to `globals.css` (third-party imports such as
+`flag-icons`).
+
+## Quality Gates
+
+Every PR MUST pass all of the following before merge:
+
+1. `npm run build` — TypeScript compilation + Next.js build
+2. `npm test` — Vitest run with 0 failures **and** ≥ 80% global coverage
+3. `npm run test:e2e` — Playwright game-flow spec passes on any PR touching
+   game logic or the API route
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other project guidelines. Amendments require
+updating this file, updating `plan.md`, and a brief justification in the commit
+message. The coverage threshold and the two NON-NEGOTIABLE principles (I and
+II) require explicit rationale to amend.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-05-22 | **Last Amended**: 2026-05-22
