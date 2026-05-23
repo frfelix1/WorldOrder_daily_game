@@ -7,23 +7,63 @@ export function ScoreDisplay({ score }: ScoreDisplayProps) {
 
   return (
     <div aria-label={`Running score: ${score} / 150`}>
-      <div className="flex justify-between items-baseline mb-2">
-        <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest font-semibold">
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          marginBottom: '8px',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '9px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.28em',
+            color: 'var(--text-muted)',
+          }}
+        >
           Score
         </span>
-        <span className="text-[var(--text-secondary)] tabular-nums text-sm font-semibold">
+        <span
+          style={{
+            fontSize: '15px',
+            fontWeight: 700,
+            fontVariantNumeric: 'tabular-nums',
+            background: 'linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-bright))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
           {score} / 150
         </span>
       </div>
+      {/* Progress track */}
       <div
-        className="h-1.5 rounded-full overflow-hidden"
-        style={{ background: 'var(--border)' }}
+        style={{
+          height: '6px',
+          borderRadius: '999px',
+          overflow: 'hidden',
+          background: 'var(--border)',
+          position: 'relative',
+        }}
       >
         <div
-          className="h-full rounded-full transition-all duration-700 ease-out"
           style={{
+            height: '100%',
+            borderRadius: '999px',
             width: `${pct}%`,
-            background: 'linear-gradient(90deg, var(--accent-dim), var(--accent))',
+            backgroundImage: pct > 0
+              ? 'linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-bright))'
+              : 'none',
+            backgroundSize: '200% auto',
+            animation: pct > 0 ? 'shimmerGold 2.5s linear infinite' : 'none',
+            boxShadow: pct > 0
+              ? '0 0 10px rgba(232, 197, 71, 0.6), 0 0 4px rgba(232, 197, 71, 0.9)'
+              : 'none',
+            transition: 'width 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
           }}
         />
       </div>

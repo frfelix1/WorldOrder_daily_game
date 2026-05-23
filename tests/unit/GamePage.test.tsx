@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import GamePage from '../../src/app/page';
 import type { PuzzleFile } from '../../src/types';
 
@@ -9,16 +9,26 @@ vi.mock('next/font/google', () => ({
   Geist_Mono: () => ({ variable: '--font-geist-mono' }),
 }));
 
-// Mock dnd-kit
+// Mock @dnd-kit/core — RankingBoard uses useDraggable, useDroppable, DragOverlay
 vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children ?? null}</>,
   closestCenter: vi.fn(),
   PointerSensor: vi.fn(),
   KeyboardSensor: vi.fn(),
   useSensor: vi.fn(),
   useSensors: vi.fn(() => []),
+  useDroppable: () => ({ setNodeRef: () => {}, isOver: false }),
+  useDraggable: () => ({
+    attributes: {},
+    listeners: {},
+    setNodeRef: () => {},
+    transform: null,
+    isDragging: false,
+  }),
 }));
 
+// Mock @dnd-kit/sortable — still needed for CountryCard (kept as legacy)
 vi.mock('@dnd-kit/sortable', () => ({
   SortableContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   verticalListSortingStrategy: {},
@@ -35,7 +45,10 @@ vi.mock('@dnd-kit/sortable', () => ({
 }));
 
 vi.mock('@dnd-kit/utilities', () => ({
-  CSS: { Transform: { toString: () => '' } },
+  CSS: {
+    Transform: { toString: () => '' },
+    Translate: { toString: () => '' },
+  },
 }));
 
 const mockPuzzle: PuzzleFile = {
@@ -68,10 +81,17 @@ describe('GamePage', () => {
     expect(screen.getByText(/Loading today/)).toBeInTheDocument();
   });
 
-  it('shows 5 country cards after puzzle loads', async () => {
+  it('shows 5 pool chips after puzzle loads', async () => {
     render(<GamePage />);
     await waitFor(() => {
-      expect(screen.getAllByTestId('country-card')).toHaveLength(5);
+      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
+    }, { timeout: 3000 });
+  });
+
+  it('shows ranking board after puzzle loads', async () => {
+    render(<GamePage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('ranking-board')).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
@@ -129,6 +149,15 @@ describe('GamePage', () => {
     }, { timeout: 3000 });
   });
 
+  it('submit button is disabled when slots are not all filled', async () => {
+    render(<GamePage />);
+    await waitFor(() => {
+      const btn = screen.getByTestId('submit-btn');
+      expect(btn).toBeInTheDocument();
+      expect(btn).toBeDisabled();
+    }, { timeout: 3000 });
+  });
+
   it('shows retry button and error message on fetch failure', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
     render(<GamePage />);
@@ -137,29 +166,41 @@ describe('GamePage', () => {
     }, { timeout: 3000 });
   });
 
-  it('submitting an incorrect ranking adds a feedback row', async () => {
-    // Use a puzzle where the default order (countries as returned) is NOT the solution
-    const wrongOrderPuzzle = {
+  it('submitting a ranking with all slots filled adds a feedback row', async () => {
+    // Use a puzzle where the default click order is NOT the solution
+    const wrongSolutionPuzzle = {
       ...mockPuzzle,
       stats: [
-        { ...mockPuzzle.stats[0], solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'] }, // reversed from default
+        { ...mockPuzzle.stats[0], solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'] }, // reversed
         ...mockPuzzle.stats.slice(1),
       ],
     };
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(wrongOrderPuzzle),
+      json: () => Promise.resolve(wrongSolutionPuzzle),
     }));
 
     render(<GamePage />);
+
+    // Wait for pool chips to appear
     await waitFor(() => {
-      expect(screen.getByTestId('submit-btn')).toBeInTheDocument();
+      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
     }, { timeout: 3000 });
 
-    const { fireEvent: fe } = await import('@testing-library/react');
-    fe.click(screen.getByTestId('submit-btn'));
+    // Click each pool chip in turn to fill all 5 slots
+    for (let i = 0; i < 5; i++) {
+      const chips = screen.getAllByTestId('pool-chip');
+      fireEvent.click(chips[0]);
+    }
 
-    // After submitting wrong answer, a feedback row with 🟥 should appear
+    // Submit button should now be enabled
+    await waitFor(() => {
+      expect(screen.getByTestId('submit-btn')).not.toBeDisabled();
+    }, { timeout: 1000 });
+
+    fireEvent.click(screen.getByTestId('submit-btn'));
+
+    // A feedback row with incorrect results should appear
     await waitFor(() => {
       const feedbackRows = screen.queryAllByTestId('feedback-row');
       expect(feedbackRows.length).toBeGreaterThanOrEqual(1);

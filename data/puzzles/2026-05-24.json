@@ -1,0 +1,36 @@
+{
+  "date": "2026-05-24",
+  "countries": [
+    { "id": "USA", "name": "United States", "flagCode": "us" },
+    { "id": "CHN", "name": "China",         "flagCode": "cn" },
+    { "id": "IND", "name": "India",         "flagCode": "in" },
+    { "id": "BRA", "name": "Brazil",        "flagCode": "br" },
+    { "id": "RUS", "name": "Russia",        "flagCode": "ru" }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "GDP (nominal)",
+      "category": "economy",
+      "tooltip": "Gross domestic product at current prices in USD, World Bank latest estimate.",
+      "direction": "desc",
+      "solution": ["USA", "CHN", "IND", "BRA", "RUS"]
+    },
+    {
+      "id": "stat_2",
+      "label": "Population",
+      "category": "demographics",
+      "tooltip": "Total resident population as of the most recent census estimate.",
+      "direction": "desc",
+      "solution": ["IND", "CHN", "USA", "BRA", "RUS"]
+    },
+    {
+      "id": "stat_3",
+      "label": "Land Area",
+      "category": "geography",
+      "tooltip": "Total land area in square kilometres.",
+      "direction": "desc",
+      "solution": ["RUS", "USA", "CHN", "BRA", "IND"]
+    }
+  ]
+}

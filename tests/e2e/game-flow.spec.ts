@@ -1,71 +1,78 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Full game flow', () => {
-  test('shows 5 country cards, processes guesses, completes game', async ({ page }) => {
+  test('shows 5 pool chips, processes guesses, completes game', async ({ page }) => {
     await page.goto('/');
 
-    // Wait for game to load (not the loading spinner)
-    await page.waitForSelector('[data-testid="country-card"]', { timeout: 10000 });
+    // Wait for game to load — pool chips appear when ready
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
 
-    // Assert 5 country cards are visible
-    const cards = page.locator('[data-testid="country-card"]');
-    await expect(cards).toHaveCount(5);
+    // Assert 5 pool chips are visible in the pool
+    await expect(page.locator('[data-testid="pool-chip"]')).toHaveCount(5);
+
+    // Assert 5 ranking slots are visible
+    await expect(page.locator('[data-testid="ranking-slot"]')).toHaveCount(5);
 
     // Assert first stat panel is visible with a direction label
     await expect(page.locator('[data-testid="stat-panel"]')).toBeVisible();
     await expect(page.locator('[data-testid="stat-direction"]')).toBeVisible();
 
-    // Submit guesses for stat 1 until solved
-    let stat1Solved = false;
-    let attempts = 0;
-    while (!stat1Solved && attempts < 20) {
-      const submitBtn = page.locator('[data-testid="submit-btn"]');
-      if (!(await submitBtn.isVisible())) break;
-      await submitBtn.click();
-      attempts++;
-
-      // Check if stat advanced (stat panel changes or next stat label appears)
-      const feedbackRows = page.locator('[data-testid="feedback-row"]');
-      const feedbackCount = await feedbackRows.count();
-      if (feedbackCount > 0) {
-        // Check each feedback row for 5 emojis
-        const firstRow = feedbackRows.first();
-        const emojiSpans = firstRow.locator('span[aria-label]');
-        await expect(emojiSpans).toHaveCount(5);
-      }
-
-      // Check if a stat 2 indicator appeared
-      const statAdvanced = await page
-        .locator('[data-testid="stat-panel"]')
-        .getAttribute('data-stat-index');
-      if (statAdvanced && parseInt(statAdvanced) > 0) {
-        stat1Solved = true;
-        break;
-      }
-
-      // Or check for result card (game complete)
-      if (await page.locator('[data-testid="result-card"]').isVisible()) {
-        break;
+    /** Fill all empty slots by clicking pool chips one at a time */
+    async function fillEmptySlots() {
+      while (true) {
+        const count = await page.locator('[data-testid="pool-chip"]').count();
+        if (count === 0) break;
+        await page.locator('[data-testid="pool-chip"]').first().click();
+        await page.waitForTimeout(30);
       }
     }
 
-    // Complete stats 2 and 3
-    for (let stat = 0; stat < 2; stat++) {
+    // Play through all 3 stats
+    for (let stat = 0; stat < 3; stat++) {
       let solved = false;
-      attempts = 0;
-      while (!solved && attempts < 20) {
+      let attempts = 0;
+
+      while (!solved && attempts < 25) {
+        // Fill any empty slots
+        await fillEmptySlots();
+
         const submitBtn = page.locator('[data-testid="submit-btn"]');
         if (!(await submitBtn.isVisible())) {
           solved = true;
           break;
         }
+
+        // Wait for submit to become enabled (all slots filled)
+        await expect(submitBtn).toBeEnabled({ timeout: 2000 });
         await submitBtn.click();
         attempts++;
 
+        // Check for feedback rows
+        const feedbackRows = page.locator('[data-testid="feedback-row"]');
+        const feedbackCount = await feedbackRows.count();
+        if (feedbackCount > 0) {
+          const firstRow = feedbackRows.first();
+          const emojiSpans = firstRow.locator('span[aria-label]');
+          await expect(emojiSpans).toHaveCount(5);
+        }
+
+        // Check if game complete
         if (await page.locator('[data-testid="result-card"]').isVisible()) {
           solved = true;
           break;
         }
+
+        // Check if stat advanced
+        const statPanel = page.locator('[data-testid="stat-panel"]');
+        const statAdvanced = await statPanel.getAttribute('data-stat-index');
+        if (statAdvanced && parseInt(statAdvanced) > stat) {
+          // Wait for board to reset (800ms transition)
+          await page.waitForTimeout(900);
+          solved = true;
+          break;
+        }
+
+        await page.waitForTimeout(100);
       }
     }
 
@@ -107,7 +114,7 @@ test.describe('Daily rotation', () => {
 
     // Should show result card without needing to play
     await expect(page.locator('[data-testid="result-card"]')).toBeVisible({ timeout: 5000 });
-    // RankingList should not be visible
-    await expect(page.locator('[data-testid="ranking-list"]')).not.toBeVisible();
+    // Ranking board should not be visible on the result screen
+    await expect(page.locator('[data-testid="ranking-board"]')).not.toBeVisible();
   });
 });

@@ -1,0 +1,36 @@
+{
+  "date": "2026-05-16",
+  "countries": [
+    { "id": "RUS", "name": "Russia",  "flagCode": "ru" },
+    { "id": "CAN", "name": "Canada",  "flagCode": "ca" },
+    { "id": "USA", "name": "United States", "flagCode": "us" },
+    { "id": "CHN", "name": "China",   "flagCode": "cn" },
+    { "id": "AUS", "name": "Australia", "flagCode": "au" }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Land Area",
+      "category": "geography",
+      "tooltip": "Total land area in square kilometres.",
+      "direction": "desc",
+      "solution": ["RUS", "CAN", "USA", "CHN", "AUS"]
+    },
+    {
+      "id": "stat_2",
+      "label": "CO₂ per Capita",
+      "category": "environment",
+      "tooltip": "Annual CO₂ emissions per person in metric tonnes.",
+      "direction": "desc",
+      "solution": ["AUS", "USA", "CAN", "RUS", "CHN"]
+    },
+    {
+      "id": "stat_3",
+      "label": "Population",
+      "category": "demographics",
+      "tooltip": "Total resident population as of the most recent census estimate.",
+      "direction": "desc",
+      "solution": ["CHN", "USA", "RUS", "CAN", "AUS"]
+    }
+  ]
+}

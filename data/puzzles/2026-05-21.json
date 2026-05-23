@@ -1,0 +1,36 @@
+{
+  "date": "2026-05-21",
+  "countries": [
+    { "id": "CAN", "name": "Canada",       "flagCode": "ca" },
+    { "id": "AUS", "name": "Australia",    "flagCode": "au" },
+    { "id": "RUS", "name": "Russia",       "flagCode": "ru" },
+    { "id": "ARG", "name": "Argentina",    "flagCode": "ar" },
+    { "id": "ZAF", "name": "South Africa", "flagCode": "za" }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Land Area",
+      "category": "geography",
+      "tooltip": "Total land area in square kilometres.",
+      "direction": "desc",
+      "solution": ["RUS", "CAN", "AUS", "ARG", "ZAF"]
+    },
+    {
+      "id": "stat_2",
+      "label": "Life Expectancy",
+      "category": "health",
+      "tooltip": "Average life expectancy at birth in years.",
+      "direction": "desc",
+      "solution": ["AUS", "CAN", "ARG", "RUS", "ZAF"]
+    },
+    {
+      "id": "stat_3",
+      "label": "GDP per Capita",
+      "category": "economy",
+      "tooltip": "GDP divided by total population — a measure of average prosperity.",
+      "direction": "desc",
+      "solution": ["AUS", "CAN", "RUS", "ARG", "ZAF"]
+    }
+  ]
+}

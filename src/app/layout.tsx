@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
-import { Bebas_Neue, Figtree } from 'next/font/google';
+import { Cinzel, Outfit } from 'next/font/google';
 import './globals.css';
 
-const bebasNeue = Bebas_Neue({
-  variable: '--font-bebas',
-  weight: '400',
+const cinzel = Cinzel({
+  variable: '--font-cinzel',
   subsets: ['latin'],
   display: 'swap',
+  weight: ['400', '700', '900'],
 });
 
-const figtree = Figtree({
-  variable: '--font-figtree',
+const outfit = Outfit({
+  variable: '--font-outfit',
   subsets: ['latin'],
   display: 'swap',
 });
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bebasNeue.variable} ${figtree.variable} h-full antialiased`}
+      className={`${cinzel.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

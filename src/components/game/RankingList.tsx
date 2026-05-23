@@ -45,6 +45,8 @@ export function RankingList({ countries, order, onReorder, disabled = false, las
     if (over && active.id !== over.id) {
       const oldIndex = order.indexOf(active.id as string);
       const newIndex = order.indexOf(over.id as string);
+      // Don't allow moving a locked (correct) card or displacing a locked position
+      if (lastBulls?.[oldIndex] || lastBulls?.[newIndex]) return;
       onReorder(arrayMove(order, oldIndex, newIndex));
     }
   }

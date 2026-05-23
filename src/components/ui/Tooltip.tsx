@@ -25,13 +25,42 @@ export function Tooltip({ content, children }: TooltipProps) {
         id={tooltipId}
         role="tooltip"
         hidden={!visible}
-        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-64 px-3 py-2.5 rounded-xl shadow-2xl z-50 pointer-events-none text-xs leading-relaxed"
         style={{
-          background: 'var(--surface-3)',
+          position: 'absolute',
+          bottom: 'calc(100% + 10px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '240px',
+          padding: '10px 14px',
+          borderRadius: '12px',
+          zIndex: 50,
+          pointerEvents: 'none',
+          background: 'rgba(10, 16, 30, 0.92)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
           border: '1px solid var(--border-hover)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(232,197,71,0.05)',
           color: 'var(--text-secondary)',
+          fontSize: '12px',
+          lineHeight: '1.6',
+          animation: visible ? 'fadeIn 0.15s ease-out both' : 'none',
         }}
       >
+        {/* Small arrow */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-5px',
+            left: '50%',
+            transform: 'translateX(-50%) rotate(45deg)',
+            width: '8px',
+            height: '8px',
+            background: 'rgba(10, 16, 30, 0.92)',
+            border: '1px solid var(--border-hover)',
+            borderTop: 'none',
+            borderLeft: 'none',
+          }}
+        />
         {content}
       </div>
     </div>
