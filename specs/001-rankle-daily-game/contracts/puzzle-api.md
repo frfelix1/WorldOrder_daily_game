@@ -161,3 +161,4 @@ The API route reads the file for the requested date and returns it directly (wit
 3. Verify all country-stat value combinations are distinct (no ties)
 4. Verify stats span at least 2 distinct categories
 5. Deploy (or merge to main) before the puzzle date's UTC midnight
+6. Verify no puzzle in the preceding 30 calendar days uses the same set of 5 country IDs or any of the same 3 stat labels (SC-006). For MVP this is a manual check against existing files in `data/puzzles/`. A lint script (`scripts/check-puzzle-uniqueness.ts`) is recommended as a post-MVP addition.
