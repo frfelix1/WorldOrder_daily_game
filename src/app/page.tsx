@@ -169,7 +169,6 @@ export default function GamePage() {
         };
         savePlayerStats(updatedPlayerStats);
       } else {
-        const nextStatNum = newActiveStatIndex + 1;
         setAnnouncement(`Stat ${statIndex + 1} solved!`);
         // After 800ms delay, reset order for next stat
         setTimeout(() => {
@@ -182,10 +181,24 @@ export default function GamePage() {
 
   if (pageStatus === 'loading') {
     return (
-      <main className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-neutral-300 border-t-neutral-700" />
-          <p className="text-neutral-600">Loading today&apos;s puzzle…</p>
+      <main className="flex flex-col items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-5">
+          {/* Branded spinner */}
+          <div className="relative h-12 w-12">
+            <div className="absolute inset-0 rounded-full border-2 border-[var(--border)]" />
+            <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-[var(--accent)]" />
+          </div>
+          <div className="flex flex-col items-center gap-1">
+          <span
+            className="text-2xl tracking-[0.2em] text-[var(--accent)]"
+            style={{ fontFamily: 'var(--font-bebas)' }}
+          >
+            Rankle
+          </span>
+            <p className="text-xs text-[var(--text-muted)] tracking-widest uppercase">
+              Loading today&apos;s puzzle
+            </p>
+          </div>
         </div>
       </main>
     );
@@ -194,13 +207,17 @@ export default function GamePage() {
   if (pageStatus === 'error') {
     return (
       <main className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="text-center max-w-sm">
-          <p className="text-red-600 mb-4">
-            Couldn&apos;t load today&apos;s puzzle. Check your connection and try again.
-          </p>
+        <div className="text-center max-w-sm p-7 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)]">
+          <div
+            className="text-3xl tracking-[0.15em] text-[var(--accent)]"
+            style={{ fontFamily: 'var(--font-bebas)' }}
+          >
+            Rankle
+          </div>
+          <p className="text-xs text-[var(--text-muted)] mb-4">Couldn&apos;t load today&apos;s puzzle. Check your connection and try again.</p>
           <button
             onClick={fetchPuzzle}
-            className="px-6 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-600"
+            className="px-6 py-2.5 bg-[var(--accent)] text-black font-semibold rounded-xl hover:bg-amber-400 active:scale-95 transition-all text-sm"
           >
             Try Again
           </button>
@@ -223,53 +240,87 @@ export default function GamePage() {
   const activeStatIndex = gameState.activeStatIndex;
   const activeStat = puzzle.stats[activeStatIndex] ?? null;
   const activeSession = gameState.stats[activeStatIndex];
+  const lastBulls = activeSession?.guesses.length
+    ? activeSession.guesses[activeSession.guesses.length - 1].bulls
+    : undefined;
 
   return (
-    <main className="flex flex-col items-center min-h-screen p-4 max-w-lg mx-auto">
-      <h1 className="text-3xl font-bold text-neutral-900 mb-2 mt-4">Rankle</h1>
-      <p className="text-sm text-neutral-500 mb-6">#{puzzleNumber}</p>
+    <main className="flex flex-col items-center min-h-screen">
+      <div className="w-full max-w-md px-4 pt-6 pb-10 flex flex-col gap-4">
 
-      <LiveRegion message={announcement} />
+        {/* Header */}
+        <header className="flex items-center justify-between mb-1">
+          <h1
+          className="text-4xl tracking-[0.15em] text-[var(--accent)]"
+          style={{ fontFamily: 'var(--font-bebas)' }}
+        >
+          Rankle
+          </h1>
+          <span className="text-xs text-[var(--text-muted)] font-medium tracking-widest uppercase">
+            #{puzzleNumber}
+          </span>
+        </header>
 
-      <div className="w-full mb-4">
+        <LiveRegion message={announcement} />
+
+        {/* Score */}
         <ScoreDisplay score={gameState.runningScore} />
-      </div>
 
-      <div className="w-full mb-4">
-        <StatPanel
-          stat={activeStat}
-          isSolved={activeSession?.solved ?? false}
-          statIndex={activeStatIndex}
-        />
-      </div>
-
-      {/* Historical feedback rows for current stat */}
-      {activeSession && activeSession.guesses.length > 0 && (
-        <div className="w-full mb-4 flex flex-col gap-1">
-          {activeSession.guesses.map((guess, i) => (
-            <FeedbackRow key={i} guess={guess} statIndex={activeStatIndex + 1} guessIndex={i + 1} />
+        {/* Stat progress stepper */}
+        <div className="flex gap-2 items-center" aria-label="Round progress">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={[
+                'h-1 flex-1 rounded-full transition-all duration-700',
+                i < activeStatIndex
+                  ? 'bg-[var(--success)]'
+                  : i === activeStatIndex
+                    ? 'bg-[var(--accent)]'
+                    : 'bg-[var(--border)]',
+              ].join(' ')}
+            />
           ))}
         </div>
-      )}
 
-      <div className="w-full mb-4">
+        {/* Stat panel */}
+        <div className="animate-fade-slide-down">
+          <StatPanel
+            stat={activeStat}
+            isSolved={activeSession?.solved ?? false}
+            statIndex={activeStatIndex}
+          />
+        </div>
+
+        {/* Historical feedback rows for current stat */}
+        {activeSession && activeSession.guesses.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {activeSession.guesses.map((guess, i) => (
+              <FeedbackRow key={i} guess={guess} statIndex={activeStatIndex + 1} guessIndex={i + 1} />
+            ))}
+          </div>
+        )}
+
+        {/* Ranking list */}
         <RankingList
           countries={puzzle.countries}
           order={currentOrder}
           onReorder={setCurrentOrder}
           disabled={activeSession?.solved ?? false}
+          lastBulls={lastBulls}
         />
-      </div>
 
-      {!activeSession?.solved && (
-        <button
-          data-testid="submit-btn"
-          onClick={handleSubmit}
-          className="w-full py-3 bg-neutral-800 text-white font-semibold rounded-lg hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-600"
-        >
-          Submit Ranking
-        </button>
-      )}
+        {/* Submit */}
+        {!activeSession?.solved && (
+          <button
+            data-testid="submit-btn"
+            onClick={handleSubmit}
+            className="w-full py-3.5 bg-[var(--accent)] text-black font-bold rounded-xl hover:bg-amber-400 active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)] uppercase tracking-widest text-sm"
+          >
+            Submit Ranking
+          </button>
+        )}
+      </div>
     </main>
   );
 }

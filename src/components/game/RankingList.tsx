@@ -23,9 +23,10 @@ interface RankingListProps {
   order: string[];
   onReorder: (newOrder: string[]) => void;
   disabled?: boolean;
+  lastBulls?: boolean[];
 }
 
-export function RankingList({ countries, order, onReorder, disabled = false }: RankingListProps) {
+export function RankingList({ countries, order, onReorder, disabled = false, lastBulls }: RankingListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -55,8 +56,13 @@ export function RankingList({ countries, order, onReorder, disabled = false }: R
         aria-disabled="true"
         className="flex flex-col gap-2"
       >
-        {sortedCountries.map((country) => (
-          <CountryCard key={country.id} country={country} />
+        {sortedCountries.map((country, index) => (
+          <CountryCard
+            key={country.id}
+            country={country}
+            rank={index + 1}
+            isCorrect={lastBulls?.[index]}
+          />
         ))}
       </ul>
     );
@@ -66,8 +72,13 @@ export function RankingList({ countries, order, onReorder, disabled = false }: R
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={order} strategy={verticalListSortingStrategy}>
         <ul data-testid="ranking-list" className="flex flex-col gap-2">
-          {sortedCountries.map((country) => (
-            <CountryCard key={country.id} country={country} />
+          {sortedCountries.map((country, index) => (
+            <CountryCard
+              key={country.id}
+              country={country}
+              rank={index + 1}
+              isCorrect={lastBulls?.[index]}
+            />
           ))}
         </ul>
       </SortableContext>
