@@ -6,7 +6,7 @@
 
 **Tests**: Constitution Gate II (Test-First, NON-NEGOTIABLE) is active. Tests MUST be written and confirmed failing before implementation. `vitest --coverage` ≥ 80% globally blocks merge. Tests are included for every user story and every foundational lib module.
 
-**Scoring note**: Implementation follows the exponential penalty formula from `data-model.md` and `research.md` — max score 3000 (1000 per stat). Share text format: `Rankle #N — X/3000`.
+**Scoring note**: Implementation follows the linear scoring formula from spec.md FR-011 — max score 150 (50 per stat, 10 per position). Share text format: `Rankle #N — X pts`.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -39,11 +39,11 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete. Constitution Gate II — write each test block first and confirm it fails before proceeding to the matching implementation task.
 
 - [ ] T010 [P] Write failing unit tests for puzzle number utility in `tests/unit/puzzle.test.ts`: test `getPuzzleNumber()` returns a consistent non-negative integer from UTC epoch; test `getUTCDateString()` returns today's date in `YYYY-MM-DD` format; test that different UTC dates produce different puzzle numbers
-- [ ] T011 [P] Write failing unit tests for scoring engine in `tests/unit/scoring.test.ts`: test `scoreForStat()` returns 1000 for a single all-bull guess; test exponential penalty accumulates correctly across multiple misses (base=50, mult=2); test floor at 0 when penalties exceed 1000; test `totalScore()` sums three stat scores; test a country misplaced 5+ times drives stat score to 0
+- [ ] T011 [P] Write failing unit tests for scoring engine in `tests/unit/scoring.test.ts`: test `scoreForStat()` returns 50 for a single all-bull guess (5 positions × 10 pts); test that one miss on a position reduces its contribution to 8 (`10 − 2×1`); test that 5 misses on a position drives its contribution to 0 (`max(10 − 2×5, 0) = 0`); test floor at 0 — 6+ misses on a position still scores 0 (no negative); test `totalScore()` sums three stat scores (max 150 = 3 × 50)
 - [ ] T012 [P] Write failing unit tests for game state in `tests/unit/game-state.test.ts`: `loadGameState(n)` returns `null` on fresh localStorage; returns state when puzzle number matches; silently returns `null` (stale discard) when stored `puzzleNumber` differs from `n`; returns state with `status: "complete"` when game was finished; `saveGameState` roundtrips through JSON correctly; `loadPlayerStats` returns zero-initialised struct on first call; `savePlayerStats` persists and reloads correctly
 - [ ] T013 Write failing API contract tests in `tests/integration/api/puzzle.test.ts`: GET `/api/puzzle?date=2026-05-22` returns 200 with `date`, `countries` (length 5), `stats` (length 3), `Cache-Control` header containing `s-maxage=86400`; GET with missing `date` returns 400 `{ error: "invalid_date" }`; GET with `date=9999-99-99` (no file) returns 404 `{ error: "not_found" }`
 - [ ] T014 [P] Implement `src/lib/puzzle.ts`: export `getPuzzleNumber(): number` (integer UTC days since fixed EPOCH_MS constant); export `getUTCDateString(): string` (returns `new Date().toISOString().slice(0, 10)`); all parameters and return types explicitly annotated (Gate I)
-- [ ] T015 [P] Implement `src/lib/scoring.ts`: export `scoreForStat(guesses: Guess[], solution: string[]): number` with exponential penalty formula (`penalty(k) = 50 × 2^k`, `stat_score = max(0, 1000 − Σ penalties)`); export `totalScore(statSessions: StatSession[], solutions: string[][]): number`; pure functions, no side effects (Gate IV)
+- [ ] T015 [P] Implement `src/lib/scoring.ts`: export `scoreForStat(guesses: Guess[], solution: string[]): number` with linear formula — for each of the 5 positions, `n` = count of guesses where that position was wrong; position score = `Math.max(10 - 2 * n, 0)`; stat score = sum of 5 position scores (max 50); export `totalScore(statSessions: StatSession[], solutions: string[][]): number` (max 150); pure functions, no side effects (Gate IV)
 - [ ] T016 Implement `src/lib/game-state.ts`: export `loadGameState(currentPuzzleNumber: number): GameState | null` (reads `rankle_state`, discards if `puzzleNumber` mismatches or JSON parse fails); export `saveGameState(state: GameState): void`; export `loadPlayerStats(): PlayerStats` (returns zero-initialised struct if missing); export `savePlayerStats(stats: PlayerStats): void`; all localStorage access isolated to this module (Gate IV)
 - [ ] T017 Implement puzzle API route in `src/app/api/puzzle/route.ts`: `export async function GET(req: NextRequest)` — reads `date` query param, validates `YYYY-MM-DD` regex (400 on failure); reads `data/puzzles/${date}.json` from filesystem (404 on ENOENT); returns `NextResponse.json(puzzle, { headers: { 'Cache-Control': '...' } })`; GET-only route (Gate III)
 - [ ] T018 [P] Create sample puzzle file `data/puzzles/2026-05-22.json` with the five-country, three-stat example from `contracts/puzzle-api.md`; create a second sample for tomorrow's date as a second test fixture
@@ -58,20 +58,20 @@
 
 **Goal**: Player visits the game, sees five country cards with flags, works through three sequential stats using drag-to-reorder, receives bull/miss positional feedback per guess, and sees a final score after solving all three stats.
 
-**Independent Test**: Load `http://localhost:3000`, confirm five country cards appear with flags, submit a ranking for stat 1 and receive feedback, submit the correct ranking, confirm the stat advances; complete all three stats; verify the score screen appears with a score between 0 and 3000.
+**Independent Test**: Load `http://localhost:3000`, confirm five country cards appear with flags, submit a ranking for stat 1 and receive feedback, submit the correct ranking, confirm the stat advances; complete all three stats; verify the score screen appears with a score between 0 and 150.
 
 ### Tests for User Story 1 — Write First, Confirm Failing (Gate II)
 
 - [ ] T021 [P] [US1] Write failing unit tests for `CountryCard` in `tests/unit/CountryCard.test.tsx`: renders country name; renders a `<span>` element with class `fi fi-{flagCode}`; applies `aria-roledescription="sortable item"` when draggable; accepts `isDragging` prop without error
-- [ ] T022 [P] [US1] Write failing unit tests for `FeedbackRow` in `tests/unit/FeedbackRow.test.tsx`: renders exactly 5 emoji characters per guess; renders 🟩 at bull positions and ⬜ at miss positions; each position has an `aria-label` that communicates correct/incorrect without relying on color alone
-- [ ] T023 [P] [US1] Write failing unit tests for `ScoreDisplay` in `tests/unit/ScoreDisplay.test.tsx`: renders score value in the DOM; re-renders when `score` prop changes; includes accessible label `Running score: N / 3000`; always visible (not conditionally hidden)
-- [ ] T024 [P] [US1] Write failing E2E test in `tests/e2e/game-flow.spec.ts`: navigate to `/`; assert 5 country card elements are visible; assert first stat panel is visible with a direction label; drag a country card to a new position; click submit; assert feedback row appears with 5 emoji; keep submitting until stat 1 is solved; assert stat 2 appears; complete stats 2 and 3; assert result screen appears with score
+- [ ] T022 [P] [US1] Write failing unit tests for `FeedbackRow` in `tests/unit/FeedbackRow.test.tsx`: renders exactly 5 emoji characters per guess; renders 🟩 at bull positions and 🟥 at miss positions; each position has an `aria-label` that communicates correct/incorrect
+- [ ] T023 [P] [US1] Write failing unit tests for `ScoreDisplay` in `tests/unit/ScoreDisplay.test.tsx`: renders score value in the DOM; re-renders when `score` prop changes; includes accessible label `Running score: N / 150`; always visible (not conditionally hidden)
+- [ ] T024 [P] [US1] Write failing E2E test in `tests/e2e/game-flow.spec.ts`: navigate to `/`; assert 5 country card elements are visible; assert first stat panel is visible with a direction label; drag a country card to a new position; click submit; assert feedback row appears with 5 emoji; keep submitting until stat 1 is solved; assert stat 2 appears; complete stats 2 and 3; assert result screen appears with score between 0 and 150
 
 ### Implementation for User Story 1
 
 - [ ] T025 [P] [US1] Implement `src/components/game/CountryCard.tsx`: accepts `country: Country`, `isDragging?: boolean`; renders country name + `<span className="fi fi-{country.flagCode}">` flag chip; uses dnd-kit `useSortable` hook; applies CSS `transform` via `transform` style property only — no `top`/`left` changes during drag (Gate: Performance Budget)
-- [ ] T026 [P] [US1] Implement `src/components/game/FeedbackRow.tsx`: accepts `guess: Guess`; maps `guess.bulls` to 🟩 (true) or ⬜ (false) for each of 5 positions; wraps each in a `<span>` with `aria-label="Position N: correct|incorrect"` (Gate V — shape not color alone)
-- [ ] T027 [P] [US1] Implement `src/components/game/ScoreDisplay.tsx`: accepts `score: number`; renders `<div aria-label="Running score: {score} / 3000">{score} / 3000</div>`; always mounted in layout (Gate: FR-022)
+- [ ] T026 [P] [US1] Implement `src/components/game/FeedbackRow.tsx`: accepts `guess: Guess`; maps `guess.bulls` to 🟩 (true) or 🟥 (false) for each of 5 positions; wraps each in a `<span>` with `aria-label="Position N: correct|incorrect"` (Gate V)
+- [ ] T027 [P] [US1] Implement `src/components/game/ScoreDisplay.tsx`: accepts `score: number`; renders `<div aria-label="Running score: {score} / 150">{score} / 150</div>`; always mounted in layout (Gate: FR-022)
 - [ ] T028 [P] [US1] Implement `src/components/ui/LiveRegion.tsx`: renders `<div aria-live="polite" aria-atomic="true" className="sr-only">{message}</div>`; accepts `message: string` prop; used to announce stat-solved and game-complete events (Gate V)
 - [ ] T029 [US1] Implement `src/components/game/RankingList.tsx`: wraps `DndContext` and `SortableContext` (vertical list strategy); renders ordered list of `CountryCard`; on drag end calls `onReorder(newOrder: string[])` using `arrayMove`; configures `PointerSensor` with `activationConstraint: { distance: 8 }` and `KeyboardSensor` with `sortableKeyboardCoordinates` (Gate V — keyboard access); depends on T025
 - [ ] T030 [US1] Implement `src/components/game/StatPanel.tsx`: accepts `stat: StatDef | null`, `isSolved: boolean`; renders stat label, direction label (e.g. "Rank from most to least" based on `stat.direction`), and a tooltip trigger placeholder (to be wired in US3); renders a "solved" badge when `isSolved`; renders nothing when `stat` is `null` (locked)
@@ -86,17 +86,16 @@
 
 **Goal**: After completing the puzzle the player sees an emoji grid of all their guesses and can copy the share text to clipboard with one click/tap.
 
-**Independent Test**: Complete a game session; verify the result card displays `Rankle #N — X/3000` header and an emoji grid with one line per stat (multiple guesses joined by ` → `); click the share button; confirm clipboard contains the correctly formatted plain text.
+**Independent Test**: Complete a game session; verify the result card displays `Rankle #N — X pts` header and an emoji grid with one line per stat (multiple guesses joined by ` / `); click the share button; confirm clipboard contains the correctly formatted plain text.
 
 ### Tests for User Story 2 — Write First, Confirm Failing (Gate II)
 
-- [ ] T033 [P] [US2] Extend `tests/unit/scoring.test.ts` with failing tests for `buildShareText`: given a completed `GameState` and puzzle number, produces a string starting with `Rankle #N — X/3000`; second line is blank; each stat produces one line `Stat N: 🟩⬜...` with multiple guesses joined by ` → `; no country names appear in the output (spoiler-free); single perfect guess produces `Stat 1: 🟩🟩🟩🟩🟩`
+- [ ] T033 [P] [US2] Extend `tests/unit/scoring.test.ts` with failing tests for `buildShareText`: given a completed `GameState` and puzzle number, produces a string starting with `Rankle #N — X pts`; second line is blank; each stat produces one line `Stat N: 🟩🟥...` with multiple guesses joined by ` / `; no country names appear in the output (spoiler-free); single perfect guess produces `Stat 1: 🟩🟩🟩🟩🟩`
 - [ ] T034 [P] [US2] Write failing unit tests for `ResultCard` in `tests/unit/ResultCard.test.tsx`: renders final score; renders one emoji row per guess per stat; renders a share button with accessible label; on share button click calls `navigator.clipboard.writeText` with the share text; shows "Copied!" confirmation text after click; mocks `navigator.clipboard.writeText` to resolve
-
 ### Implementation for User Story 2
 
-- [ ] T035 [US2] Add `buildShareText(state: GameState, puzzleNumber: number): string` to `src/lib/scoring.ts`: header `Rankle #N — X/3000`, blank line, then one line per stat `Stat N: [emojiRow] → [emojiRow] → ...` where each guess is 5 emojis (🟩 bull / ⬜ miss); stat labels are anonymous (`Stat 1`, `Stat 2`, `Stat 3`); no country names; pure function (Gate IV)
-- [ ] T036 [US2] Implement `src/components/game/ResultCard.tsx`: accepts `state: GameState`, `puzzleNumber: number`; renders `<p>Rankle #{puzzleNumber} — {state.finalScore}/3000</p>`; renders emoji grid — one row per guess per stat as `<FeedbackRow>`; renders share button; on click calls `navigator.clipboard.writeText(buildShareText(state, puzzleNumber))`, catches rejection, falls back to `navigator.share` if available, shows "Copied!" confirmation for 2 seconds; Tailwind-only styles (Gate: Styling)
+- [ ] T035 [US2] Add `buildShareText(state: GameState, puzzleNumber: number): string` to `src/lib/scoring.ts`: header `Rankle #N — X pts`, blank line, then one line per stat `Stat N: [emojiRow] / [emojiRow] / ...` where each guess is 5 emojis (🟩 bull / 🟥 miss); stat labels are anonymous (`Stat 1`, `Stat 2`, `Stat 3`); no country names; pure function (Gate IV)
+- [ ] T036 [US2] Implement `src/components/game/ResultCard.tsx`: accepts `state: GameState`, `puzzleNumber: number`; renders `<p>Rankle #{puzzleNumber} — {state.finalScore} pts</p>`; renders emoji grid — one row per guess per stat as `<FeedbackRow>`; renders share button; on click calls `navigator.clipboard.writeText(buildShareText(state, puzzleNumber))`, catches rejection, falls back to `navigator.share` if available, shows "Copied!" confirmation for 2 seconds; Tailwind-only styles (Gate: Styling)
 - [ ] T037 [US2] Wire `ResultCard` into `src/app/page.tsx`: confirm `<ResultCard state={gameState} puzzleNumber={getPuzzleNumber()} />` is already rendered when `gameState.status === "complete"` (from T031); add `PlayerStats` update — on transition to complete call `savePlayerStats` with incremented `played`, `completed`, updated `totalScore`, `bestScore`, streak fields
 - [ ] T038 [US2] Run `npm test` — confirm all US2 tests pass with ≥ 80% global coverage
 
@@ -251,5 +250,5 @@ Task T031: src/app/page.tsx                       (depends on T025–T030)
 - Constitution Gate I: no `any`, strict TypeScript throughout
 - Constitution Gate IV: all localStorage access only via `game-state.ts`; all UTC logic only via `puzzle.ts`; all scoring only via `scoring.ts`
 - Constitution Gate: Tailwind utility classes only — no `style={}` props, no CSS-in-JS
-- Scoring: max 3000 total (1000 per stat), exponential penalty formula from `data-model.md`
+- Scoring: max 150 total (50 per stat, 10 per position), linear formula `max(10 - 2n, 0)` per position from spec.md FR-011
 - Commit after each phase or logical group

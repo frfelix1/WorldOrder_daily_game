@@ -87,7 +87,7 @@
       ]
     }
   ],
-  "runningScore": 950
+  "runningScore": 44
 }
 ```
 
@@ -113,35 +113,31 @@
 
 ## 6. Scoring Algorithm
 
-**Decision**: Exponential per-country penalty, starting score 1000 per stat
+**Decision**: Linear per-position scoring, max 150 points total
 
 **Formula**:
 ```
-penalty(k) = base_penalty × multiplier^k
-base_penalty = 50
-multiplier = 2
+position_score = max(10 − 2 × n, 0)
 ```
 
-Where `k` = number of prior incorrect placements of the same country within the same stat.
+Where `n` = number of guesses in which that position was wrong (across all guesses for the stat, counting from the first guess until the stat is solved).
 
 ```
-stat_score = max(0, 1000 - Σ penalties across all countries and all guesses for that stat)
-total_score = stat_1_score + stat_2_score + stat_3_score  (max 3000)
+stat_score  = sum of 5 position scores  (max 50)
+total_score = stat_1_score + stat_2_score + stat_3_score  (max 150)
 ```
 
-**Penalty progression per country per stat**:
+**Score progression per position**:
 
-| Miss # | Incremental | Cumulative |
-|--------|-------------|------------|
-| 1      | 50          | 50         |
-| 2      | 100         | 150        |
-| 3      | 200         | 350        |
-| 4      | 400         | 750        |
-| 5      | 800         | 1550 → capped at 0 |
+| Misses (n) | Position score |
+|------------|---------------|
+| 0          | 10 (first guess correct) |
+| 1          | 8 |
+| 2          | 6 |
+| 3          | 4 |
+| 4          | 2 |
+| 5+         | 0 (floor) |
 
-A single country misplaced 5+ times exhausts the full 1000-point stat budget on its own; floor at 0 prevents negative scores.
+A perfect game (every position correct on the first guess) scores 150. Getting any position wrong once costs 2 points; 5+ misses on a position scores 0 for that position with a floor at 0 (no negative scores).
 
-**Tuning levers** (deferred to post-MVP playtesting per spec):
-- Raise `base_penalty` (e.g. 75) for harsher single-mistake punishment
-- Lower `multiplier` (e.g. 1.5) for a gentler exponential curve
-- The formula above is the concrete baseline for the initial implementation
+**Why linear**: Simple, transparent, and intuitive to players — every miss costs exactly 2 points per position. No exponential complexity to explain or tune.

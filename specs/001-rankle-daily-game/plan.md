@@ -53,7 +53,7 @@ The project constitution (`/.specify/memory/constitution.md`) was ratified
 | II. Test-First (NON-NEGOTIABLE) | Red-Green-Refactor: tests written and confirmed failing before implementation; `vitest --coverage` ≥ 80% globally blocks merge | ✅ Gate active — see quickstart scripts |
 | III. App Router Discipline | `'use client'` at lowest viable boundary; GET-only API routes | ⚠ Justified exception: `app/page.tsx` is `'use client'` at page level. Every child component requires browser APIs (drag-and-drop, localStorage, real-time score updates). This is the narrowest viable boundary for this game. |
 | IV. Game Logic Purity | `src/lib/` pure functions; `localStorage` exclusively via `game-state.ts`; UTC logic exclusively via `puzzle.ts` | ✅ Gate active — enforced by project structure |
-| V. Accessibility | WCAG 2.1 AA; dnd-kit `KeyboardSensor` active; bull/miss conveyed by shape (🟩/⬜) not color alone; `aria-live` on stat-solved and game-complete events | ✅ Gate active — accessibility requirements are implementation tasks |
+| V. Accessibility | WCAG 2.1 AA; dnd-kit `KeyboardSensor` active; bull/miss conveyed by 🟩/🟥 distinct emoji; `aria-live` on stat-solved and game-complete events | ✅ Gate active — accessibility requirements are implementation tasks |
 | Performance Budget | API p95 ≤ 200ms + `Cache-Control` required; TTI ≤ 1.5s on 4G; drag animations MUST use CSS `transform` only (no `top`/`left`/`width` during drag) | ✅ Gate active |
 | Puzzle Data Integrity | Solution arrays are valid permutations of `countries[*].id`; no ties; stats span ≥ 2 categories; authoring checklist in `contracts/puzzle-api.md` must be followed | ✅ Gate active |
 | Styling | Tailwind utility classes only; no CSS-in-JS; no inline `style={}` props; `globals.css` for third-party imports only | ✅ Gate active |
@@ -91,7 +91,7 @@ src/
 │   │   ├── CountryCard.tsx       # Country name + flag chip
 │   │   ├── RankingList.tsx       # Drag-to-reorder sortable list
 │   │   ├── StatPanel.tsx         # Active stat label + tooltip + direction label
-│   │   ├── FeedbackRow.tsx       # Historical guess row with bull/miss indicators (🟩/⬜ — shape not color alone)
+│   │   ├── FeedbackRow.tsx       # Historical guess row with bull/miss indicators (🟩/🟥)
 │   │   ├── ScoreDisplay.tsx      # Live running score
 │   │   └── ResultCard.tsx        # Post-game emoji grid + share action
 │   └── ui/
@@ -99,7 +99,7 @@ src/
 │       └── LiveRegion.tsx        # aria-live region for stat-solved + game-complete announcements
 ├── lib/
 │   ├── game-state.ts             # localStorage read/write + stale detection
-│   ├── scoring.ts                # Exponential penalty scoring engine
+│   ├── scoring.ts                # Linear scoring engine
 │   └── puzzle.ts                 # Puzzle number calculation from UTC epoch
 └── types/
     └── index.ts                  # Shared TypeScript types

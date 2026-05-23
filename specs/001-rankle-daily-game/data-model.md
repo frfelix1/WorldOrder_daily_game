@@ -84,8 +84,8 @@ interface GameState {
   status: "in_progress" | "complete";
   activeStatIndex: number;   // 0 | 1 | 2 — which stat is currently active
   stats: StatSession[];      // Length 3, one per stat in reveal order
-  runningScore: number;      // Live score, updated after each guess (0–3000)
-  finalScore: number | null; // Set when status becomes "complete"
+  runningScore: number;      // Live score, updated after each guess (0–150)
+  finalScore: number | null; // Set when status becomes "complete" (0–150)
   updatedAt: number;         // Unix ms timestamp of last write
 }
 ```
@@ -126,7 +126,7 @@ interface PlayerStats {
   maxStreak: number;
   lastCompletedPuzzleNumber: number | null;
   scoreDistribution: Record<string, number>;
-                              // e.g. { "3000": 2, "2500-2999": 5, ... } — bucketed
+                              // e.g. { "150": 2, "100-149": 5, ... } — bucketed
 }
 ```
 
@@ -137,28 +137,20 @@ interface PlayerStats {
 The scoring state is a pure function of all guesses up to the current point. It is recomputed on each guess and stored as `runningScore` in `GameState`.
 
 ```typescript
-// Per-stat scoring
+// Per-stat scoring: 5 positions × max 10 pts each = max 50 pts per stat
+// n = number of guesses where a position was wrong (across all guesses for this stat)
 function scoreForStat(guesses: Guess[], solution: string[]): number {
-  const BASE = 50;
-  const MULT = 2;
-  const missCounts: Record<string, number> = {};  // country id → number of prior misses
-  let penalties = 0;
+  let score = 0;
 
-  for (const guess of guesses) {
-    for (let i = 0; i < guess.order.length; i++) {
-      if (!guess.bulls[i]) {
-        const countryId = guess.order[i];
-        const k = missCounts[countryId] ?? 0;
-        penalties += BASE * Math.pow(MULT, k);
-        missCounts[countryId] = k + 1;
-      }
-    }
+  for (let pos = 0; pos < solution.length; pos++) {
+    const n = guesses.filter(g => !g.bulls[pos]).length;
+    score += Math.max(10 - 2 * n, 0);
   }
 
-  return Math.max(0, 1000 - penalties);
+  return score;
 }
 
-// Total score across all resolved stats
+// Total score across all resolved stats (max 150 = 3 stats × 50)
 function totalScore(statSessions: StatSession[], solutions: string[][]): number {
   return statSessions.reduce((sum, s, i) => sum + scoreForStat(s.guesses, solutions[i]), 0);
 }
@@ -174,25 +166,25 @@ Derived at game completion; not stored (recomputed from `GameState` on demand).
 interface ResultCard {
   puzzleNumber: number;
   dateUTC: string;
-  finalScore: number;         // 0–3000
+  finalScore: number;         // 0–150
   grid: EmojiRow[][];         // [stat][guess] → emoji row
   shareText: string;          // Pre-formatted plain text for clipboard
 }
 
-type EmojiRow = string;       // e.g. "🟩⬜🟩⬜🟩" — one emoji per country position
+type EmojiRow = string;       // e.g. "🟩🟥🟩🟥🟩" — one emoji per country position
 ```
 
 **Emoji encoding**:
 - `🟩` — bull (correct position)
-- `⬜` — miss (incorrect position)
+- `🟥` — miss (incorrect position)
 
 **Share text format**:
 ```
-Rankle #42 — 2850/3000
+Rankle #42 — 130 pts
 
-Stat 1: 🟩⬜🟩⬜🟩 → 🟩🟩🟩🟩🟩
+Stat 1: 🟩🟥🟩🟥🟩 / 🟩🟩🟩🟩🟩
 Stat 2: 🟩🟩🟩🟩🟩
-Stat 3: ⬜⬜🟩⬜🟩 → ⬜🟩🟩⬜🟩 → 🟩🟩🟩🟩🟩
+Stat 3: 🟥🟥🟩🟥🟩 / 🟥🟩🟩🟥🟩 / 🟩🟩🟩🟩🟩
 ```
 
 ---
