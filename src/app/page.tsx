@@ -59,8 +59,7 @@ export default function GamePage() {
 
   // Visual effects
   const [roundCompleteEffect, setRoundCompleteEffect] = useState(false);
-  const [wrongGuessEffect, setWrongGuessEffect] = useState(false);
-  const [wrongGuessCount, setWrongGuessCount] = useState(0);
+
 
   const fetchPuzzle = useCallback(async (targetDate: string) => {
     setPageStatus('loading');
@@ -243,10 +242,7 @@ export default function GamePage() {
         setTimeout(() => setRoundCompleteEffect(false), 1800);
       }
     } else {
-      // Wrong guess — trigger shake
-      setWrongGuessCount((c) => c + 1);
-      setWrongGuessEffect(true);
-      setTimeout(() => setWrongGuessEffect(false), 600);
+      // Wrong guess — no visual effect
     }
   }
 
@@ -524,7 +520,7 @@ export default function GamePage() {
               style={{ background: 'var(--border)' }}
             >
               <div
-                className="h-full rounded-full transition-all duration-1000 ease-out"
+                className="h-full rounded-full"
                 style={{
                   width: i <= activeStatIndex ? '100%' : '0%',
                   background: i < activeStatIndex
@@ -537,7 +533,6 @@ export default function GamePage() {
                     : i < activeStatIndex
                       ? '0 0 6px rgba(0,232,150,0.4)'
                       : 'none',
-                  transition: 'width 1s ease-out, box-shadow 0.3s',
                 }}
               />
             </div>
@@ -566,13 +561,9 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* ── Ranking board (with shake wrapper) ── */}
+        {/* ── Ranking board ── */}
         <div
-          key={`shake-${wrongGuessCount}`}
-          className={[
-            'animate-slide-up-fade',
-            wrongGuessEffect ? 'animate-shake' : '',
-          ].join(' ')}
+          className="animate-slide-up-fade"
           style={{ animationDelay: '200ms' }}
         >
           <RankingBoard
