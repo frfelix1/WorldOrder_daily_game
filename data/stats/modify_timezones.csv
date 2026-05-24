@@ -1,0 +1,288 @@
+Country,Number of time zones (*),Time zone,Notes
+France,12,"UTC−10:00 – Society Islands, Tuamotus, Austral Islands
+UTC−09:30 – Marquesas Islands
+UTC−09:00 – Gambier Islands
+UTC−08:00 – Clipperton Island
+UTC−04:00 (AST) – Guadeloupe, Martinique, Saint Barthélemy, Saint Martin
+UTC−03:00 (PMST)— French Guiana, Saint Pierre and Miquelon
+UTC+01:00 (CET) – Metropolitan France
+UTC+03:00 – Mayotte, Scattered Islands in the Indian Ocean
+UTC+04:00 – Réunion, Crozet Islands
+UTC+05:00 – Kerguelen Islands, Saint Paul and Amsterdam Islands
+UTC+11:00 – New Caledonia
+UTC+12:00 – Wallis and Futuna",Time in France
+Russia,11,"UTC+02:00 (Kaliningrad Time) – Kaliningrad Oblast
+ UTC+03:00 (Moscow Time) – Most of European Russia
+UTC+04:00 (Samara Time) – Astrakhan Oblast, Samara Oblast, Saratov Oblast, Udmurtia, and Ulyanovsk Oblast
+UTC+05:00 (Yekaterinburg Time) – Bashkortostan, Chelyabinsk Oblast, Khanty–Mansia, Kurgan Oblast, Orenburg Oblast, Perm Krai, Sverdlovsk Oblast, Tyumen Oblast, and Yamalia
+ UTC+06:00 (Omsk Time) – Omsk Oblast
+ UTC+07:00 (Krasnoyarsk Time) – Altai Krai, Altai Republic, Kemerovo Oblast, Khakassia, Krasnoyarsk Krai, Novosibirsk Oblast, Tomsk Oblast, and Tuva
+ UTC+08:00 (Irkutsk Time) – Buryatia and Irkutsk Oblast
+ UTC+09:00 (Yakutsk Time) – Amur Oblast, western Sakha Republic, and Zabaykalsky Krai
+ UTC+10:00 (Vladivostok Time) – Jewish Autonomous Oblast, Khabarovsk Krai, Primorsky Krai, and central Sakha Republic
+ UTC+11:00 (Magadan Time) – Magadan Oblast, eastern Sakha, and Sakhalin Oblast
+UTC+12:00 (Kamchatka Time) – Chukotka and Kamchatka Krai",Time in Russia
+United States,11,"UTC−12:00 (AoE) – Baker Island and Howland Island 
+ UTC−11:00 (ST) – American Samoa, Jarvis Island, Kingman Reef, Midway Atoll and Palmyra Atoll 
+ UTC−10:00 (HT) – Hawaii, most of the Aleutian Islands, and Johnston Atoll 
+ UTC−09:00 (AKT) – Most of the state of Alaska 
+ UTC−08:00 (PT) – Pacific Time zone: the Pacific coast states, the Idaho Panhandle and most of Nevada and Oregon 
+ UTC−07:00 (MT) – Mountain Time zone: most of Idaho, part of Oregon, and the Mountain states plus western parts of some adjacent states 
+ UTC−06:00 (CT) – Central Time zone: a large area spanning from the Gulf Coast to the Great Lakes 
+ UTC−05:00 (ET) – Eastern Time zone: roughly a triangle covering all the states from the Great Lakes down to Florida and east to the Atlantic coast 
+ UTC−04:00 (AST) – Puerto Rico, the U.S. Virgin Islands
+ UTC+10:00 (ChT) – Guam and the Northern Mariana Islands 
+ UTC+12:00 (WAKT) – Wake Island",Time in the United States
+Antarctica,10,"UTC−03:00 (ART) – Palmer Station, Rothera Station
+UTC+00:00 (GMT) – Troll Station
+UTC+03:00 – Syowa Station
+ UTC+05:00 – Mawson Station
+ UTC+06:00 – Vostok Station
+ UTC+07:00 – Davis Station 
+ UTC+08:00 – Casey Station 
+ UTC+10:00 – Dumont-d'Urville Station
+ UTC+11:00 – Casey Station
+ UTC+12:00 – McMurdo Station, Amundsen–Scott South Pole Station",Time in Antarctica
+Australia,9,"UTC+05:00 – Heard and McDonald Islands
+ UTC+06:30 – Cocos (Keeling) Islands
+ UTC+07:00 (CXT) – Christmas Island 
+ UTC+08:00 (AWST) – Western Australia, Indian Pacific railway when travelling between Port Augusta, South Australia and Kalgoorlie, Western Australia)
+ UTC+08:45 (CWT) – South Australia (Border Village), Western Australia (Caiguna, Cocklebiddy, Eucla, Madura, Mundrabilla)
+ UTC+09:30 (ACST) – South Australia, Northern Territory, New South Wales (Yancowinna County)
+ UTC+10:00 (AEST) – Queensland, New South Wales, Australian Capital Territory, Victoria, Tasmania
+ UTC+10:30 – Lord Howe Island
+ UTC+11:00 (NFT) – Norfolk Island",Time in Australia
+United Kingdom,9,"UTC−08:00 – Pitcairn Islands
+ UTC−05:00 – Cayman Islands, Turks and Caicos Islands 
+ UTC−04:00 (AST) – Anguilla, Bermuda, British Virgin Islands, Montserrat
+UTC−03:00 (FKST) – Falkland Islands
+ UTC−02:00 – South Georgia and the South Sandwich Islands
+ UTC+00:00 (GMT in winter/BST in summer) – Main territory of the United Kingdom, Saint Helena, Ascension and Tristan da Cunha, Guernsey, Isle of Man, Jersey
+ UTC+01:00 (CET) – Gibraltar
+ UTC+02:00 (EET) – Akrotiri and Dhekelia
+ UTC+06:00 – British Indian Ocean Territory",Time in the United Kingdom
+Canada,5,"UTC−07:00 (MT) – Alberta, British Columbia, Northwest Territories, Nunavut (west of 102°W and all communities in the Kitikmeot Region), Lloydminster surrounding area in Saskatchewan, and Yukon
+ UTC−06:00 (CT)— Manitoba, Nunavut (between 85° West and 102°W except western Southampton Island), Ontario (Northwestern Ontario west of 90°W with some exceptions and Big Trout Lake area east of 90°W), Saskatchewan except Lloydminster
+ UTC−05:00 (ET) – Nunavut east of 85°W and entire Southampton Island, Ontario east of 90°W (except Big Trout Lake area) plus several more western areas, Quebec (most of province)
+ UTC−04:00 (AT) – Labrador (all but southeastern tip), New Brunswick, Nova Scotia, Prince Edward Island, eastern part of Quebec 
+ UTC−03:30 (NT) – Labrador (southeastern), Newfoundland",Time in Canada
+New Zealand,5,"UTC−11:00 – Niue
+ UTC−10:00 – Cook Islands
+ UTC+12:00 – Main territory of New Zealand
+ UTC+12:45 – Chatham Islands
+ UTC+13:00 – Tokelau",Time in New Zealand
+Brazil,4,"UTC−05:00 (Brasília time −2) – Acre and southwestern Amazonas 
+ UTC−04:00 (Brasília time −1) – Most of Amazonas, Mato Grosso, Mato Grosso do Sul, Rondônia, Roraima 
+ UTC−03:00 (Brasília time) – Southeast, South and Northeast regions (except offshore islands), Goiás, Distrito Federal, Tocantins, Pará, Amapá 
+ UTC−02:00 (Brasília time +1) – Offshore islands (Fernando de Noronha, Trindade and Martim Vaz, Rocas Atoll, Saint Peter and Saint Paul Archipelago)",Time in Brazil
+Denmark,4,"UTC−04:00 – Pituffik Space Base in Greenland 
+ UTC−02:00 – Most of Greenland, including inhabited south coast and west coast 
+ UTC+00:00 – East coast of Northeast Greenland National Park, Faroe Islands
+ UTC+01:00 (CET) – Main territory of Denmark",Time in Denmark
+Mexico,4,"UTC−08:00 (Zone 4 or Northwest Zone) – State of Baja California
+ UTC−07:00 (Zone 3 or Pacific Zone) – States of Baja California Sur, Nayarit (except Bahía de Banderas), Sinaloa, Sonora, and northwest border municipalities in Chihuahua
+ UTC−06:00 (Zone 2 or Central Zone) – Most of Mexico 
+ UTC−05:00 (Zone 1 or Southeast Zone) – State of Quintana Roo",Time in Mexico
+Chile,3,"UTC−06:00 – Easter Island
+ UTC−04:00 – Main territory of Chile
+ UTC−03:00 – Aysén and Magallanes regions",Time in Chile
+Indonesia,3,"UTC+07:00 (Western Indonesian Standard Time) – Islands of Sumatra, Java, Madura, provinces of Bangka Belitung Islands, Riau Islands, West Kalimantan and Central Kalimantan
+ UTC+08:00 (Central Indonesian Standard Time) – Islands of Sulawesi, Bali, provinces of East Nusa Tenggara, West Nusa Tenggara, East Kalimantan, North Kalimantan and South Kalimantan
+ UTC+09:00 (Eastern Indonesian Standard Time) –  Maluku Islands and Western New Guinea",Time in Indonesia
+Kiribati,3,"UTC+12:00 – Gilbert Islands
+ UTC+13:00 – Phoenix Islands
+ UTC+14:00 – Line Islands",Time in Kiribati
+Democratic Republic of the Congo,2,"UTC+01:00 (WAT) – Provinces of Équateur, Kinshasa, Kongo Central, Kwango, Kwilu, Mai-Ndombe, Mongala, Nord-Ubangi, Sud-Ubangi and Tshuapa
+ UTC+02:00 (CAT) – Provinces of Bas-Uele, Haut-Katanga, Haut-Lomami, Haut-Uele, Kasaï, Kasaï-Central, Kasaï Oriental, Lomami, Lualaba, Maniema, Nord-Kivu, Sankuru, Sud-Kivu, Tanganyika, Tshopo and Ituri Interim Administration",Time in the Democratic Republic of the Congo
+Ecuador,2,"UTC−06:00 (GALT) – Galápagos Province
+UTC−05:00 (Ecuador Time) – Main territory of Ecuador",Time in Ecuador
+Federated States of Micronesia,2,"UTC+10:00 – States of Chuuk and Yap 
+ UTC+11:00 – States of Kosrae and Pohnpei",Time in the Federated States of Micronesia
+Kingdom of the Netherlands,2,"UTC−04:00 (AST) – Caribbean municipalities and constituent countries
+ UTC+01:00 (CET) – Main territory of the Netherlands",Time in the Netherlands
+Mongolia,2,"UTC+07:00 – Provinces of Khovd, Uvs and Bayan-Ölgii 
+ UTC+08:00 – Most of the country",Time in Mongolia
+Papua New Guinea,2,"UTC+10:00 – Most of the country
+ UTC+11:00 – Autonomous Region of Bougainville (Bougainville Standard Time)",Time in Papua New Guinea
+Portugal,2,"UTC−01:00 – Azores
+ UTC+00:00 (WET) – Madeira and the Main territory of Portugal",Time in Portugal
+South Africa,2,"UTC+02:00 (South African Standard Time) – Main territory of South Africa
+ UTC+03:00 – Prince Edward Islands",Time in South Africa
+Spain,2,"UTC+00:00 (WET) – Canary Islands 
+ UTC+01:00 (CET) – Main territory of Spain",Time in Spain
+Afghanistan,1,UTC+04:30,Time in Afghanistan
+Albania,1,UTC+01:00 (CET),Time in Albania
+Algeria,1,UTC+01:00 (CET),Time in Algeria
+Andorra,1,UTC+01:00 (CET),Time in Andorra
+Angola,1,UTC+01:00 (WAT),Time in Angola
+Antigua and Barbuda,1,UTC−04:00 (AST),
+Argentina,1,UTC−03:00 (ART),Time in Argentina
+Armenia,1,UTC+04:00,Time in Armenia
+Austria,1,UTC+01:00 (CET),Time in Austria
+Azerbaijan,1,UTC+04:00,Time in Azerbaijan
+Bahamas,1,UTC−05:00 (EST),Time in the Bahamas
+Bahrain,1,UTC+03:00,Time in Bahrain
+Bangladesh,1,UTC+06:00 (BST),Time in Bangladesh
+Barbados,1,UTC−04:00,Time in Barbados
+Belarus,1,UTC+03:00 (MSK),Time in Belarus
+Belgium,1,UTC+01:00 (CET),Time in Belgium
+Belize,1,UTC−06:00,Time in Belize
+Benin,1,UTC+01:00 (WAT),Time in Benin
+Bhutan,1,UTC+06:00 (BTT),Time in Bhutan
+Bolivia,1,UTC−04:00,Time in Bolivia
+Bosnia and Herzegovina,1,UTC+01:00 (CET),Time in Bosnia and Herzegovina
+Botswana,1,UTC+02:00 (CAT),Time in Botswana
+Brunei,1,UTC+08:00,Time in Brunei
+Bulgaria,1,UTC+02:00 (EET),Time in Bulgaria
+Burkina Faso,1,UTC+00:00,
+Burundi,1,UTC+02:00 (CAT),Time in Burundi
+Cambodia,1,UTC+07:00,Time in Cambodia
+Cameroon,1,UTC+01:00 (WAT),Time in Cameroon
+Cape Verde,1,UTC−01:00 (Cape Verde Time),Time in Cape Verde
+Central African Republic,1,UTC+01:00 (WAT),
+Chad,1,UTC+01:00 (WAT),
+China,1,UTC+08:00 (CST) (only uses Xinjiang Time unofficially in Tibet and Xinjiang),Time in China
+Colombia,1,UTC−05:00,Time in Colombia
+Comoros,1,UTC+03:00 (EAT),Time in Comoros
+Republic of the Congo,1,UTC+01:00 (WAT),Time in the Republic of the Congo
+Costa Rica,1,UTC−06:00,Time in Costa Rica
+Croatia,1,UTC+01:00 (CET),Time in Croatia
+Cuba,1,UTC−05:00,Time in Cuba
+Cyprus,1,UTC+02:00 (EET),Time in Cyprus
+Czech Republic,1,UTC+01:00 (CET) (CRT),Time in the Czech Republic
+Djibouti,1,UTC+03:00 (EAT),Time in Djibouti
+Dominica,1,UTC−04:00,Time in Dominica
+Dominican Republic,1,UTC−04:00,Time in the Dominican Republic
+East Timor,1,UTC+09:00,Time in East Timor
+Egypt,1,UTC+02:00 (EET),Time in Egypt
+El Salvador,1,UTC−06:00,Time in El Salvador
+Equatorial Guinea,1,UTC+01:00 (WAT),Time in Equatorial Guinea
+Eritrea,1,UTC+03:00 (EAT),Time in Eritrea
+Estonia,1,UTC+02:00 (EET),Time in Estonia
+Eswatini,1,UTC+02:00,Time in Eswatini
+Ethiopia,1,UTC+03:00 (EAT),Time in Ethiopia
+Fiji,1,UTC+12:00,Time in Fiji
+Finland,1,UTC+02:00 (EET),Time in Finland
+Gabon,1,UTC+01:00 (WAT),Time in Gabon
+Gambia,1,UTC+00:00,Time in Gambia
+Georgia,1,UTC+04:00,Time in Georgia
+Germany,1,UTC+01:00 (CET),Time in Germany
+Ghana,1,UTC+00:00,Time in Ghana
+Greece,1,UTC+02:00 (EET),Time in Greece
+Grenada,1,UTC−04:00,Time in Grenada
+Guatemala,1,UTC−06:00,Time in Grenada
+Guinea,1,UTC+00:00,Time in Guinea
+Guinea-Bissau,1,UTC+00:00,Time in Guinea-Bissau
+Guyana,1,UTC−04:00,Time in Guyana
+Haiti,1,UTC−05:00,Time in Haiti
+Honduras,1,UTC−06:00,Time in Honduras
+Hong Kong,1,UTC+08:00 (HKT),Time in Hong Kong
+Hungary,1,UTC+01:00 (CET),Time in Hungary
+Iceland,1,UTC+00:00,Time in Iceland
+India,1,UTC+05:30 (IST),Time in India
+Iran,1,UTC+03:30 (IRST),Time in Iran
+Iraq,1,UTC+03:00,Time in Iraq
+Ireland,1,UTC+00:00 (WET),Time in Ireland
+Israel,1,UTC+02:00 (IST),Time in Israel
+Italy,1,UTC+01:00 (CET),Time in Italy
+Ivory Coast,1,UTC+00:00,Time in Ivory Coast
+Jamaica,1,UTC−05:00,Time in Jamaica
+Japan,1,UTC+09:00 (JST),Time in Japan
+Jordan,1,UTC+03:00,Time in Jordan
+Kazakhstan,1,UTC+05:00,Time in Kazakhstan
+Kenya,1,UTC+03:00 (EAT),Time in Kenya
+North Korea,1,UTC+09:00 (Pyongyang Time),Time in North Korea
+South Korea,1,UTC+09:00 (Korea Standard Time),Time in South Korea
+Kuwait,1,UTC+03:00 (Arabia Standard Time),Time in Kuwait
+Kyrgyzstan,1,UTC+06:00,Time in Kyrgyzstan
+Laos,1,UTC+07:00,Time in Laos
+Latvia,1,UTC+02:00 (EET),Time in Latvia
+Lebanon,1,UTC+02:00 (EET),Time in Lebanon
+Lesotho,1,UTC+02:00,Time in Lesotho
+Liberia,1,UTC+00:00,Time in Liberia
+Libya,1,UTC+02:00 (EET),
+Liechtenstein,1,UTC+01:00 (CET),Time in Liechtenstein
+Lithuania,1,UTC+02:00 (EET),Time in Lithuania
+Luxembourg,1,UTC+01:00 (CET),Time in Luxembourg
+Macau,1,UTC+08:00 (Macau Standard Time),Time in Macau
+Madagascar,1,UTC+03:00 (EAT),Time in Madagascar
+Malawi,1,UTC+02:00 (CAT),Time in Malawi
+Malaysia,1,UTC+08:00 (Malaysian Standard Time),Time in Malaysia
+Maldives,1,UTC+05:00,Time in the Maldives
+Mali,1,UTC+00:00,
+Malta,1,UTC+01:00 (CET),Time in Malta
+Marshall Islands,1,UTC+12:00,Time in the Marshall Islands
+Mauritania,1,UTC+00:00,Time in Mauritania
+Mauritius,1,UTC+04:00 (Mauritius Time),Time in Mauritania
+Moldova,1,UTC+02:00 (EET),Time in Moldova
+Monaco,1,UTC+01:00 (CET),Time in Monaco
+Montenegro,1,UTC+01:00 (CET),Time in Montenegro
+Morocco,1,UTC+01:00 (CET),Time in Morocco
+Mozambique,1,UTC+02:00 (CAT),Time in Mozambique
+Myanmar,1,UTC+06:30 (Myanmar Standard Time),Time in Myanmar
+Namibia,1,UTC+02:00 (CAT),Time in Namibia
+Nauru,1,UTC+12:00,
+Nepal,1,UTC+05:45 (Nepal Time),Time in Nepal
+Nicaragua,1,UTC−06:00,Time in Nicaragua
+Niger,1,UTC+01:00 (WAT),
+Nigeria,1,UTC+01:00 (WAT),
+North Macedonia,1,UTC+01:00 (CET),Time in North Macedonia
+Norway,1,UTC+01:00 (CET),Time in Norway
+Oman,1,UTC+04:00,Time in Oman
+Pakistan,1,UTC+05:00 (PKT),Time in Pakistan
+Palau,1,UTC+09:00,Time in Palau
+Palestine,1,UTC+02:00,Time in Palestine
+Panama,1,UTC−05:00,Time in Panama
+Paraguay,1,UTC−03:00,Time in Paraguay
+Peru,1,UTC−05:00 (PET),Time in Peru
+Philippines,1,UTC+08:00 (PHT),Time in Philippines
+Poland,1,UTC+01:00 (CET),Time in Poland
+Qatar,1,UTC+03:00 (Arabia Standard Time),Time in Qatar
+Romania,1,UTC+02:00 (EET),Time in Romania
+Rwanda,1,UTC+02:00 (CAT),Time in Rwanda
+Saint Kitts and Nevis,1,UTC−04:00,
+Saint Lucia,1,UTC−04:00,
+Saint Vincent and the Grenadines,1,UTC−04:00,
+Samoa,1,UTC+13:00,Time in Samoa
+San Marino,1,UTC+01:00 (CET),
+São Tomé and Príncipe,1,UTC+00:00,Time in São Tomé and Príncipe
+Saudi Arabia,1,UTC+03:00 (Arabia Standard Time),Time in Saudi Arabia
+Senegal,1,UTC+00:00,Time in Senegal
+Serbia,1,UTC+01:00 (CET),Time in Serbia
+Seychelles,1,UTC+04:00 (Seychelles Time),Time in Seychelles
+Sierra Leone,1,UTC+00:00,Time in Sierra Leone
+Singapore,1,UTC+08:00 (SST),Time in Singapore
+Slovakia,1,UTC+01:00 (CET),Time in Slovakia
+Slovenia,1,UTC+01:00 (CET),Time in Slovenia
+Solomon Islands,1,UTC+11:00,Time in Solomon Islands
+Somalia,1,UTC+03:00 (EAT),
+South Sudan,1,UTC+02:00 (CAT),Time in South Sudan
+Sri Lanka,1,UTC+05:30 (SLST),Time in Sri Lanka
+Sudan,1,UTC+02:00,Time in Sudan
+Suriname,1,UTC−03:00,Time in Suriname
+Sweden,1,UTC+01:00 (CET),Time in Sweden
+Switzerland,1,UTC+01:00 (CET),Time in Switzerland
+Syria,1,UTC+03:00 (EET),Time in Syria
+Taiwan,1,UTC+08:00,Time in Taiwan
+Tajikistan,1,UTC+05:00,Time in Tajikistan
+Tanzania,1,UTC+03:00 (EAT),Time in Tanzania
+Thailand,1,UTC+07:00 (THA),Time in Thailand
+Togo,1,UTC+00:00,Time in Togo
+Tonga,1,UTC+13:00,Time in Tonga
+Trinidad and Tobago,1,UTC−04:00 (AST),Time in Trinidad and Tobago
+Tunisia,1,UTC+01:00 (CET),Time in Tunisia
+Turkey,1,UTC+03:00 (TRT),Time in Turkey
+Turkmenistan,1,UTC+05:00,Time in Turkmenistan
+Tuvalu,1,UTC+12:00,Time in Tuvalu
+Uganda,1,UTC+03:00 (EAT),Time in Uganda
+Ukraine,1,UTC+02:00 (EET),Time in Ukraine
+United Arab Emirates,1,UTC+04:00,Time in the United Arab Emirates
+Uruguay,1,UTC−03:00,Time in Uruguay
+Uzbekistan,1,UTC+05:00 (Uzbekistan Time),Time in Uzbekistan
+Vanuatu,1,UTC+11:00,Time in Vanuatu
+Vatican City,1,UTC+01:00 (CET),
+Venezuela,1,UTC−04:00,Time in Venezuela
+Vietnam,1,UTC+07:00 (Indochina Time),Time in Vietnam
+Yemen,1,UTC+03:00,Time in Yemen
+Zambia,1,UTC+02:00 (CAT),Time in Zambia
+Zimbabwe,1,UTC+02:00 (CAT),Time in Zimbabwe

@@ -1,0 +1,207 @@
+countryLabel,isoCode,Area (km2) (*)
+Russia,RU,17075400
+Canada,CA,9984670
+United States,US,9826675
+People's Republic of China,CN,9596961
+Brazil,BR,8515767
+Australia,AU,7692024
+India,IN,3287263
+Argentina,AR,2780400
+Kazakhstan,KZ,2724900
+Algeria,DZ,2381741
+Democratic Republic of the Congo,CD,2344858
+Saudi Arabia,SA,2250000
+Greenland,GL,2166086
+Mexico,MX,1972550
+Mexico,MX,1964375
+Indonesia,ID,1904570
+Sudan,SD,1886068
+Sudan,SD,1840687
+Libya,LY,1759541
+Iran,IR,1648195
+Mongolia,MN,1564116
+Peru,PE,1285216
+Chad,TD,1284000
+Niger,NE,1267000
+Angola,AO,1246700
+Mali,ML,1240192
+South Africa,ZA,1221037
+Colombia,CO,1141748
+Ethiopia,ET,1104300
+Bolivia,BO,1098581
+Mauritania,MR,1030700
+Egypt,EG,1010407.87
+Tanzania,TZ,947303
+Nigeria,NG,923768
+Venezuela,VE,912050
+Pakistan,PK,881913
+Namibia,NA,825615
+Mozambique,MZ,801590
+Turkey,TR,783562
+Chile,CL,756102
+Zambia,ZM,752618
+Myanmar,MM,676577.2
+Afghanistan,AF,652230
+South Sudan,SS,644329
+France,FR,643801
+Somalia,SO,637657
+Central African Republic,CF,622984
+Ukraine,UA,603550
+Madagascar,MG,587295
+Botswana,BW,581737
+Kenya,KE,581309
+Thailand,TH,513119.5
+Spain,ES,505990
+Turkmenistan,TM,491210
+Cameroon,CM,475442
+Papua New Guinea,PG,462840
+Yemen,YE,455503
+Uzbekistan,UZ,448978
+Sweden,SE,447425.16
+Morocco,MA,446550
+Iraq,IQ,437072
+Paraguay,PY,406756
+Zimbabwe,ZW,390757
+Norway,NO,385207
+Japan,JP,377972.28
+Germany,DE,357587.77
+Philippines,PH,343448
+Republic of the Congo,CG,342000
+Finland,FI,338478.34
+Vietnam,VN,331690
+Malaysia,MY,330803
+Ivory Coast,CI,322463
+Poland,PL,312683
+Oman,OM,309500
+Italy,IT,302068
+Burkina Faso,BF,274200
+New Zealand,NZ,268021
+Gabon,GA,267667
+Ecuador,EC,257204.27
+Guinea,GN,245857
+United Kingdom,GB,242495
+Uganda,UG,241038
+Ghana,GH,238535
+Romania,RO,238397
+Laos,LA,236800
+Guyana,GY,214970
+Belarus,BY,207596.76
+Kyrgyzstan,KG,199951
+Senegal,SN,196722
+Syria,SY,185180
+Cambodia,KH,181035
+Uruguay,UY,176215
+Tunisia,TN,163610
+Suriname,SR,163270
+Bangladesh,BD,147570
+Nepal,NP,147181.254346
+Tajikistan,TJ,143100
+Greece,GR,131957
+North Korea,KP,120540
+Nicaragua,NI,120340
+Malawi,MW,118484
+Eritrea,ER,117600
+Benin,BJ,114763
+Honduras,HN,112492
+Liberia,LR,111369
+Bulgaria,BG,110993.6
+Cuba,CU,109884
+Guatemala,GT,108889
+Iceland,IS,103004
+South Korea,KR,100295
+Hungary,HU,93011.4
+Portugal,PT,92225
+Jordan,JO,89341
+Serbia,RS,88499
+Azerbaijan,AZ,86600
+Austria,AT,83878.99
+United Arab Emirates,AE,83600
+Czech Republic,CZ,78871
+Panama,PA,74177.3
+Sierra Leone,SL,71740
+Ireland,IE,69797
+Georgia,GE,69700
+Sri Lanka,LK,65610
+Lithuania,LT,65300
+Latvia,LV,64593.76
+Latvia,LV,62226.85
+Togo,TG,56785
+Croatia,HR,56594
+Bosnia and Herzegovina,BA,51197
+Costa Rica,CR,51179.92
+Slovakia,SK,49033.720839
+Dominican Republic,DO,48670.82
+Estonia,EE,45335
+Denmark,DK,42925.46
+Kingdom of the Netherlands,NL,42201
+Switzerland,CH,41291
+Bhutan,BT,38394
+Taiwan,TW,36193
+Guinea-Bissau,GW,36125
+Moldova,MD,33843.5
+Belgium,BE,30688
+Lesotho,LS,30355
+Armenia,AM,29743.423459
+Albania,AL,28748
+Solomon Islands,SB,28400
+Equatorial Guinea,GQ,28051
+Burundi,BI,27834
+Haiti,HT,27750
+Rwanda,RW,26338
+North Macedonia,MK,25713
+Djibouti,DJ,23200
+Belize,BZ,22966
+El Salvador,SV,21041
+Israel,IL,20770
+Slovenia,SI,20271
+Fiji,FJ,18274
+Kuwait,KW,17818
+Eswatini,SZ,17364
+Timor-Leste,TL,14918.72
+Montenegro,ME,13883
+The Bahamas,BS,13878
+Vanuatu,VU,12190
+Qatar,QA,11437
+The Gambia,GM,11300
+Jamaica,JM,10991.90954
+Kosovo,XK,10909
+Lebanon,LB,10452
+Cyprus,CY,9242.45
+Palestine,PS,6020
+Brunei,BN,5765.313533
+Trinidad and Tobago,TT,5128
+Cape Verde,CV,4033
+Samoa,WS,2842
+Luxembourg,LU,2586.36
+Mauritius,MU,2040
+Comoros,KM,2034
+São Tomé and Príncipe,ST,1001
+Kiribati,KI,811
+Bahrain,BH,786.5
+Dominica,DM,751.096551
+Tonga,TO,748.506563
+Singapore,SG,719.1
+Federated States of Micronesia,FM,702
+Saint Lucia,LC,617.012867
+Andorra,AD,468
+Palau,PW,465.550362
+Seychelles,SC,459
+Curaçao,CW,444
+Antigua and Barbuda,AG,440.29
+Barbados,BB,439
+Saint Vincent and the Grenadines,VC,389
+Grenada,GD,348.5
+Malta,MT,316
+Maldives,MV,298
+Saint Kitts and Nevis,KN,269.358763
+Niue,NU,260
+Cook Islands,CK,240
+Marshall Islands,MH,181.43
+Aruba,AW,178.916378
+Liechtenstein,LI,160
+San Marino,SM,61.2
+Sint Maarten,SX,34
+Tuvalu,TV,25.14
+Nauru,NR,21
+Monaco,MC,2.08
+Vatican City,VA,0.49
