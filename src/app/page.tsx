@@ -67,6 +67,35 @@ export default function GamePage() {
   // Visual effects
   const [roundCompleteEffect, setRoundCompleteEffect] = useState(false);
 
+  function completeGame(finalScore: number) {
+    if (!puzzle || !gameState) return;
+
+    const completedState: GameState = {
+      ...gameState,
+      status: 'complete',
+      finalScore,
+      updatedAt: Date.now(),
+    };
+
+    setGameState(completedState);
+    saveGameState(completedState);
+    setAnnouncement(`Game complete! Your score is ${finalScore} out of 100 points.`);
+    setPageStatus('complete');
+
+    const playerStats = loadPlayerStats();
+    const updatedPlayerStats = {
+      ...playerStats,
+      played: playerStats.played + 1,
+      completed: playerStats.completed + 1,
+      totalScore: playerStats.totalScore + finalScore,
+      bestScore: Math.max(playerStats.bestScore, finalScore),
+      currentStreak: playerStats.currentStreak + 1,
+      maxStreak: Math.max(playerStats.maxStreak, playerStats.currentStreak + 1),
+      lastCompletedPuzzleNumber: puzzleNumber,
+    };
+    savePlayerStats(updatedPlayerStats);
+  }
+
 
   const fetchPuzzle = useCallback(async (targetDate: string) => {
     setPageStatus('loading');
@@ -190,16 +219,15 @@ export default function GamePage() {
     const newRunningScore = totalScore(updatedStats);
 
     const isLastStat = statIndex === 2;
-    const newActiveStatIndex = allBulls && !isLastStat ? statIndex + 1 : statIndex;
     const isComplete = allBulls && isLastStat;
 
     const updatedState: GameState = {
       ...gameState,
-      activeStatIndex: newActiveStatIndex,
+      activeStatIndex: statIndex,
       stats: updatedStats,
       runningScore: newRunningScore,
       finalScore: isComplete ? newRunningScore : gameState.finalScore,
-      status: isComplete ? 'complete' : 'in_progress',
+      status: 'in_progress',
       updatedAt: Date.now(),
     };
 
@@ -224,36 +252,40 @@ export default function GamePage() {
     setSlotAssignments(newSlotAssignments);
 
     if (allBulls) {
-      if (isComplete) {
-        setAnnouncement(`Game complete! Your score is ${newRunningScore} out of 100 points.`);
-        setPageStatus('complete');
-
-        const playerStats = loadPlayerStats();
-        const updatedPlayerStats = {
-          ...playerStats,
-          played: playerStats.played + 1,
-          completed: playerStats.completed + 1,
-          totalScore: playerStats.totalScore + newRunningScore,
-          bestScore: Math.max(playerStats.bestScore, newRunningScore),
-          currentStreak: playerStats.currentStreak + 1,
-          maxStreak: Math.max(playerStats.maxStreak, playerStats.currentStreak + 1),
-          lastCompletedPuzzleNumber: puzzleNumber,
-        };
-        savePlayerStats(updatedPlayerStats);
-      } else {
-        setAnnouncement(`Stat ${statIndex + 1} solved!`);
-        // Trigger round-complete visual
-        setRoundCompleteEffect(true);
-        setTimeout(() => {
-          setSlotAssignments([...EMPTY_SLOTS]);
-          setLockedSlots([...EMPTY_LOCKS]);
-          setAnnouncement('');
-        }, 800);
-        setTimeout(() => setRoundCompleteEffect(false), 1800);
-      }
+      setAnnouncement(isComplete ? 'Final stage solved!' : `Stat ${statIndex + 1} solved!`);
+      setRoundCompleteEffect(true);
+      setTimeout(() => setRoundCompleteEffect(false), 1800);
     } else {
       // Wrong guess — no visual effect
     }
+  }
+
+  function handleAdvanceStage() {
+    if (!gameState || pageStatus !== 'playing') return;
+
+    const statIndex = gameState.activeStatIndex;
+    const activeSession = gameState.stats[statIndex];
+    if (!activeSession?.solved) return;
+
+    if (statIndex === 2) {
+      completeGame(gameState.finalScore ?? gameState.runningScore);
+      return;
+    }
+
+    const nextStatIndex = statIndex + 1;
+    const nextState: GameState = {
+      ...gameState,
+      activeStatIndex: nextStatIndex,
+      updatedAt: Date.now(),
+    };
+
+    setGameState(nextState);
+    saveGameState(nextState);
+    setSlotAssignments([...EMPTY_SLOTS]);
+    setLockedSlots([...EMPTY_LOCKS]);
+    setLockedStatIndex(nextStatIndex);
+    setAnnouncement('');
+    setRoundCompleteEffect(false);
   }
 
   // ── Loading ──────────────────────────────────────────────────────────────────
@@ -610,7 +642,7 @@ export default function GamePage() {
           />
         </div>
 
-        {/* ── Submit ── */}
+        {/* ── Submit / Advance ── */}
         {!activeSession?.solved && (
           <div className="animate-slide-up-fade" style={{ animationDelay: '240ms' }}>
             <button
@@ -637,6 +669,32 @@ export default function GamePage() {
               } as React.CSSProperties}
             >
               Submit Ranking
+            </button>
+          </div>
+        )}
+
+        {activeSession?.solved && (
+          <div className="animate-slide-up-fade" style={{ animationDelay: '240ms' }}>
+            <button
+              data-testid="next-stage-btn"
+              onClick={handleAdvanceStage}
+              className="w-full py-4 font-bold rounded-2xl transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 uppercase tracking-[0.2em] text-sm"
+              style={{
+                background: activeStatIndex === 2
+                  ? 'linear-gradient(135deg, var(--teal) 0%, var(--success) 100%)'
+                  : 'linear-gradient(135deg, var(--gold-dim) 0%, var(--gold) 50%, var(--gold-bright) 100%)',
+                color: '#000',
+                fontFamily: 'var(--font-cinzel)',
+                boxShadow: activeStatIndex === 2
+                  ? '0 0 24px rgba(0,232,150,0.3), 0 4px 16px rgba(0,0,0,0.4)'
+                  : '0 0 24px rgba(232,197,71,0.35), 0 4px 16px rgba(0,0,0,0.4)',
+                border: activeStatIndex === 2
+                  ? '1px solid rgba(0,232,150,0.35)'
+                  : '1px solid rgba(245,215,110,0.4)',
+                transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+              } as React.CSSProperties}
+            >
+              {activeStatIndex === 2 ? 'Show Recap' : 'Next stage'}
             </button>
           </div>
         )}

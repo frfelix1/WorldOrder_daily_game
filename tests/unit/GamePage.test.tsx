@@ -493,21 +493,100 @@ describe('GamePage — slot restoration and correct guess paths (coverage)', () 
       fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
     }
 
-    // Submit stat 1 correct — all slots become locked, activeStatIndex → 1
+    // Submit stat 1 correct, then advance manually
     await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
     fireEvent.click(screen.getByTestId('submit-btn'));
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Next stage'), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
 
-    // Slots are still filled (locked from stat 1) so submit for stat 2 is immediately available
+    // Fill and submit stat 2, then advance manually
+    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
+    }
     await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
     fireEvent.click(screen.getByTestId('submit-btn'));
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Next stage'), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
 
-    // Submit stat 3
+    // Fill and submit stat 3, then show recap manually
+    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
+    }
     await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
     fireEvent.click(screen.getByTestId('submit-btn'));
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Show Recap'), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
 
     // Game complete — result card appears
     await waitFor(() => {
       expect(screen.getByTestId('result-card')).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('shows Next stage after solving a non-final stage and does not auto-advance', async () => {
+    const easyPuzzle = {
+      ...mockPuzzle,
+      stats: [
+        { ...mockPuzzle.stats[0], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
+        ...mockPuzzle.stats.slice(1),
+      ],
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(easyPuzzle),
+    }));
+
+    render(<GamePage />);
+
+    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
+    }
+
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('submit-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Next stage');
+      expect(screen.getByText('Round 1 of 3')).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('shows Show Recap after solving the third stage and does not auto-complete', async () => {
+    const easyPuzzle = {
+      ...mockPuzzle,
+      stats: [
+        { ...mockPuzzle.stats[0], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
+        { ...mockPuzzle.stats[1], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
+        { ...mockPuzzle.stats[2], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
+      ],
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(easyPuzzle),
+    }));
+
+    render(<GamePage />);
+
+    for (let stage = 0; stage < 3; stage++) {
+      await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
+      for (let i = 0; i < 5; i++) {
+        fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
+      }
+      await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+      fireEvent.click(screen.getByTestId('submit-btn'));
+
+      if (stage < 2) {
+        await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Next stage'), { timeout: 1000 });
+        fireEvent.click(screen.getByTestId('next-stage-btn'));
+      }
+    }
+
+    await waitFor(() => {
+      expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Show Recap');
+      expect(screen.queryByTestId('result-card')).not.toBeInTheDocument();
     }, { timeout: 3000 });
   });
 });
@@ -604,7 +683,7 @@ describe('GamePage — slotValues passed to RankingBoard after correct guess', (
     // After the correct submit, locked slots should display formatted values
     await waitFor(() => {
       // Nigeria's population value should be visible somewhere in the DOM
-      expect(screen.getByText('218,541,212 people')).toBeInTheDocument();
+      expect(screen.getAllByText('218,541,212 people').length).toBeGreaterThanOrEqual(1);
     }, { timeout: 3000 });
   });
 
@@ -655,7 +734,7 @@ describe('GamePage — slotValues passed to RankingBoard after correct guess', (
 
     // All 5 values should be visible after solve (stat solved = all locked + disabled)
     await waitFor(() => {
-      expect(screen.getByText('218,541,212 people')).toBeInTheDocument();
+      expect(screen.getAllByText('218,541,212 people').length).toBeGreaterThanOrEqual(1);
     }, { timeout: 3000 });
   });
 });

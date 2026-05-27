@@ -56,18 +56,18 @@ test.describe('Full game flow', () => {
           await expect(emojiSpans).toHaveCount(5);
         }
 
-        // Check if game complete
-        if (await page.locator('[data-testid="result-card"]').isVisible()) {
-          solved = true;
-          break;
-        }
+        const nextStageBtn = page.locator('[data-testid="next-stage-btn"]');
+        if (await nextStageBtn.isVisible()) {
+          const buttonLabel = await nextStageBtn.textContent();
+          await nextStageBtn.click();
 
-        // Check if stat advanced
-        const statPanel = page.locator('[data-testid="stat-panel"]');
-        const statAdvanced = await statPanel.getAttribute('data-stat-index');
-        if (statAdvanced && parseInt(statAdvanced) > stat) {
-          // Wait for board to reset (800ms transition)
-          await page.waitForTimeout(900);
+          if (buttonLabel?.match(/show recap/i)) {
+            await expect(page.locator('[data-testid="result-card"]')).toBeVisible({ timeout: 5000 });
+            solved = true;
+            break;
+          }
+
+          await page.waitForTimeout(100);
           solved = true;
           break;
         }
