@@ -27,3 +27,32 @@ describe('ScoreDisplay', () => {
     expect(el).toBeVisible();
   });
 });
+
+// T006: Static score bar — no animation, no transition
+describe('ScoreDisplay — static score bar (US2)', () => {
+  it('inner bar has no animation inline style (should be empty or "none")', () => {
+    render(<ScoreDisplay score={42} />);
+    const bar = screen.getByTestId('score-bar');
+    // Currently fails: animation = 'shimmerGold 2.5s linear infinite'
+    expect(bar.style.animation === '' || bar.style.animation === 'none').toBe(true);
+  });
+
+  it('inner bar has no transition inline style', () => {
+    render(<ScoreDisplay score={42} />);
+    const bar = screen.getByTestId('score-bar');
+    // Currently fails: transition = 'width 0.8s cubic-bezier(...)'
+    expect(bar.style.transition).toBe('');
+  });
+
+  it('inner bar renders at the correct width percentage immediately', () => {
+    render(<ScoreDisplay score={42} />);
+    const bar = screen.getByTestId('score-bar');
+    expect(bar).toHaveStyle({ width: '42%' });
+  });
+
+  it('bar width is 0% when score is 0', () => {
+    render(<ScoreDisplay score={0} />);
+    const bar = screen.getByTestId('score-bar');
+    expect(bar).toHaveStyle({ width: '0%' });
+  });
+});

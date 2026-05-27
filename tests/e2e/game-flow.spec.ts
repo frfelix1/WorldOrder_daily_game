@@ -82,6 +82,20 @@ test.describe('Full game flow', () => {
     const score = parseInt(scoreText ?? '0');
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(100);
+
+    // US1: Summary screen shows three stat sections each with an accessible label
+    const statSections = page.locator('[data-testid="result-card"] section');
+    await expect(statSections).toHaveCount(3);
+    for (let i = 0; i < 3; i++) {
+      const label = await statSections.nth(i).getAttribute('aria-label');
+      expect(label).toBeTruthy();
+    }
+
+    // US2: Score bar has no CSS transition on width in inline styles (summary context)
+    const summaryBar = page.locator('[data-testid="result-card"] [data-testid="score-bar"]');
+    await expect(summaryBar).toBeVisible();
+    const summaryTransition = await summaryBar.evaluate((el) => (el as HTMLElement).style.transition);
+    expect(summaryTransition).toBe('');
   });
 });
 
@@ -214,5 +228,85 @@ test.describe('US3 — Pool chip size', () => {
       () => document.documentElement.scrollWidth > window.innerWidth
     );
     expect(hasHorizontalScroll).toBe(false);
+  });
+});
+
+test.describe('008 — Revamped results screen', () => {
+  test('summary screen shows three stat sections and clipboard-only share (US1 + US3)', async ({ page }) => {
+    // Compute puzzle number in the test process (same formula as getPuzzleNumber())
+    const EPOCH_MS = new Date('2026-01-01T00:00:00Z').getTime();
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    const nowMs = Date.now();
+    const todayUtcMs = Math.floor(nowMs / MS_PER_DAY) * MS_PER_DAY;
+    const epochUtcMs = Math.floor(EPOCH_MS / MS_PER_DAY) * MS_PER_DAY;
+    const pn = Math.floor((todayUtcMs - epochUtcMs) / MS_PER_DAY);
+
+    const completedState = {
+      puzzleNumber: pn,
+      dateUTC: new Date().toISOString().slice(0, 10),
+      status: 'complete',
+      activeStatIndex: 2,
+      stats: [
+        { statId: 'stat_1', solved: true, guesses: [{ order: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'], bulls: [true, true, true, true, true] }] },
+        { statId: 'stat_2', solved: true, guesses: [{ order: ['AUS', 'BRA', 'DEU', 'NGA', 'JPN'], bulls: [true, true, true, true, true] }] },
+        { statId: 'stat_3', solved: true, guesses: [{ order: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'], bulls: [true, true, true, true, true] }] },
+      ],
+      runningScore: 100,
+      finalScore: 100,
+      updatedAt: Date.now(),
+    };
+
+    await page.addInitScript((state) => {
+      localStorage.setItem('worldorder_state', JSON.stringify(state));
+    }, completedState);
+
+    // Mock clipboard API and track calls; mock navigator.share to detect if called
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: {
+          writeText: (_text: string) => {
+            (window as Record<string, unknown>).__clipboardCalled = true;
+            return Promise.resolve();
+          },
+        },
+        configurable: true,
+      });
+      // Define share but track if it gets called — it should NOT be called
+      Object.defineProperty(navigator, 'share', {
+        value: () => {
+          (window as Record<string, unknown>).__shareCalled = true;
+          return Promise.resolve();
+        },
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    await page.goto('/');
+    await expect(page.locator('[data-testid="result-card"]')).toBeVisible({ timeout: 5000 });
+
+    // US1: Three stat sections rendered with accessible labels
+    const sections = page.locator('[data-testid="result-card"] section');
+    await expect(sections).toHaveCount(3);
+    for (let i = 0; i < 3; i++) {
+      const label = await sections.nth(i).getAttribute('aria-label');
+      expect(label).toBeTruthy();
+    }
+
+    // US2: Score bar has no transition on width in inline styles
+    const scoreBar = page.locator('[data-testid="result-card"] [data-testid="score-bar"]');
+    await expect(scoreBar).toBeVisible();
+    const transition = await scoreBar.evaluate((el) => (el as HTMLElement).style.transition);
+    expect(transition).toBe('');
+
+    // US3: Clicking share button writes to clipboard and never calls navigator.share
+    const shareBtn = page.locator('[data-testid="share-btn"]');
+    await shareBtn.click();
+    await expect(shareBtn).toHaveText(/Copied!/);
+
+    const clipboardCalled = await page.evaluate(() => (window as Record<string, unknown>).__clipboardCalled);
+    const shareCalled = await page.evaluate(() => (window as Record<string, unknown>).__shareCalled);
+    expect(clipboardCalled).toBe(true);
+    expect(shareCalled).toBeFalsy();
   });
 });

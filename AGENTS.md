@@ -7,8 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- SPECKIT START -->
 ## Active Feature Plan
 
-**Branch**: `007-reveal-correct-values`
-**Plan**: `specs/007-reveal-correct-values/plan.md`
-**Spec**: `specs/007-reveal-correct-values/spec.md`
-**Contracts**: `specs/007-reveal-correct-values/contracts/puzzle-api.md`
+**Branch**: `feature/summary`
+**Plan**: `specs/008-revamp-results-screen/plan.md`
+**Spec**: `specs/008-revamp-results-screen/spec.md`
 <!-- SPECKIT END -->
