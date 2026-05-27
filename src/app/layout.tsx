@@ -16,7 +16,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'Rankle',
+  title: 'WorldOrder',
   description: 'Daily geography ranking game — rank five countries against three stats.',
 };
 

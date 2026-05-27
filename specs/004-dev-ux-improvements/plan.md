@@ -6,7 +6,7 @@
 
 ## Summary
 
-Three targeted improvements to the Rankle game:
+Three targeted improvements to the WorldOrder game:
 
 1. **Dev randomize mode** — Replace the broken date-picker `DevPanel` (which calls the undeclared `setWrongGuessEffect` on date change) with a single "Randomize" button that picks a random available puzzle date and loads it fresh. Zero hardcoded test dates.
 

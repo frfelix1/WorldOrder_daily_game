@@ -1,12 +1,12 @@
-# Tasks: Rankle — Daily Geography Ranking Game
+# Tasks: WorldOrder — Daily Geography Ranking Game
 
-**Input**: Design documents from `specs/001-rankle-daily-game/`
+**Input**: Design documents from `specs/001-worldorder-daily-game/`
 
 **Prerequisites**: plan.md ✅ | spec.md ✅ | data-model.md ✅ | research.md ✅ | quickstart.md ✅ | contracts/puzzle-api.md ✅
 
 **Tests**: Constitution Gate II (Test-First, NON-NEGOTIABLE) is active. Tests MUST be written and confirmed failing before implementation. `vitest --coverage` ≥ 80% globally blocks merge. Tests are included for every user story and every foundational lib module.
 
-**Scoring note**: Implementation follows the linear scoring formula from spec.md FR-011 — max score 150 (50 per stat, 10 per position). Share text format: `Rankle #N — X pts`.
+**Scoring note**: Implementation follows the linear scoring formula from spec.md FR-011 — max score 150 (50 per stat, 10 per position). Share text format: `WorldOrder #N — X pts`.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -44,10 +44,10 @@
 - [X] T013 Write failing API contract tests in `tests/integration/api/puzzle.test.ts`: GET `/api/puzzle?date=2026-05-22` returns 200 with `date`, `countries` (length 5), `stats` (length 3), `Cache-Control` header containing `s-maxage=86400`; GET with missing `date` returns 400 `{ error: "invalid_date" }`; GET with `date=9999-99-99` (no file) returns 404 `{ error: "not_found" }`
 - [X] T014 [P] Implement `src/lib/puzzle.ts`: export `getPuzzleNumber(): number` (integer UTC days since fixed EPOCH_MS constant); export `getUTCDateString(): string` (returns `new Date().toISOString().slice(0, 10)`); all parameters and return types explicitly annotated (Gate I)
 - [X] T015 [P] Implement `src/lib/scoring.ts`: export `scoreForStat(guesses: Guess[], solution: string[]): number` with linear formula — for each of the 5 positions, `n` = count of guesses where that position was wrong; position score = `Math.max(10 - 2 * n, 0)`; stat score = sum of 5 position scores (max 50); export `totalScore(statSessions: StatSession[], solutions: string[][]): number` (max 150); pure functions, no side effects (Gate IV)
-- [X] T016 Implement `src/lib/game-state.ts`: export `loadGameState(currentPuzzleNumber: number): GameState | null` (reads `rankle_state`, discards if `puzzleNumber` mismatches or JSON parse fails); export `saveGameState(state: GameState): void`; export `loadPlayerStats(): PlayerStats` (returns zero-initialised struct if missing); export `savePlayerStats(stats: PlayerStats): void`; all localStorage access isolated to this module (Gate IV)
+- [X] T016 Implement `src/lib/game-state.ts`: export `loadGameState(currentPuzzleNumber: number): GameState | null` (reads `worldorder_state`, discards if `puzzleNumber` mismatches or JSON parse fails); export `saveGameState(state: GameState): void`; export `loadPlayerStats(): PlayerStats` (returns zero-initialised struct if missing); export `savePlayerStats(stats: PlayerStats): void`; all localStorage access isolated to this module (Gate IV)
 - [X] T017 Implement puzzle API route in `src/app/api/puzzle/route.ts`: `export async function GET(req: NextRequest)` — reads `date` query param, validates `YYYY-MM-DD` regex (400 on failure); reads `data/puzzles/${date}.json` from filesystem (404 on ENOENT); returns `NextResponse.json(puzzle, { headers: { 'Cache-Control': '...' } })`; GET-only route (Gate III)
 - [X] T018 [P] Create sample puzzle file `data/puzzles/2026-05-22.json` with the five-country, three-stat example from `contracts/puzzle-api.md`; create a second sample for tomorrow's date as a second test fixture
-- [X] T019 Configure `src/app/layout.tsx`: set `<title>Rankle</title>`, viewport meta, import `globals.css`, apply Tailwind base font class; no game logic here
+- [X] T019 Configure `src/app/layout.tsx`: set `<title>WorldOrder</title>`, viewport meta, import `globals.css`, apply Tailwind base font class; no game logic here
 - [X] T020 Run `npm test` — confirm all foundational tests (T010–T013) pass and coverage for `src/lib/` is ≥ 80%; fix any failures before proceeding
 
 **Checkpoint**: Foundation complete — lib functions tested and working, API route tested and working, user story implementation can now begin.
@@ -86,16 +86,16 @@
 
 **Goal**: After completing the puzzle the player sees an emoji grid of all their guesses and can copy the share text to clipboard with one click/tap.
 
-**Independent Test**: Complete a game session; verify the result card displays `Rankle #N — X pts` header and an emoji grid with one line per stat (multiple guesses joined by ` / `); click the share button; confirm clipboard contains the correctly formatted plain text.
+**Independent Test**: Complete a game session; verify the result card displays `WorldOrder #N — X pts` header and an emoji grid with one line per stat (multiple guesses joined by ` / `); click the share button; confirm clipboard contains the correctly formatted plain text.
 
 ### Tests for User Story 2 — Write First, Confirm Failing (Gate II)
 
-- [X] T033 [P] [US2] Extend `tests/unit/scoring.test.ts` with failing tests for `buildShareText`: given a completed `GameState` and puzzle number, produces a string starting with `Rankle #N — X pts`; second line is blank; each stat produces one line `Stat N: 🟩🟥...` with multiple guesses joined by ` / `; no country names appear in the output (spoiler-free); single perfect guess produces `Stat 1: 🟩🟩🟩🟩🟩`
+- [X] T033 [P] [US2] Extend `tests/unit/scoring.test.ts` with failing tests for `buildShareText`: given a completed `GameState` and puzzle number, produces a string starting with `WorldOrder #N — X pts`; second line is blank; each stat produces one line `Stat N: 🟩🟥...` with multiple guesses joined by ` / `; no country names appear in the output (spoiler-free); single perfect guess produces `Stat 1: 🟩🟩🟩🟩🟩`
 - [X] T034 [P] [US2] Write failing unit tests for `ResultCard` in `tests/unit/ResultCard.test.tsx`: renders final score; renders one emoji row per guess per stat; renders a share button with accessible label; on share button click calls `navigator.clipboard.writeText` with the share text; shows "Copied!" confirmation text after click; mocks `navigator.clipboard.writeText` to resolve
 ### Implementation for User Story 2
 
-- [X] T035 [US2] Add `buildShareText(state: GameState, puzzleNumber: number): string` to `src/lib/scoring.ts`: header `Rankle #N — X pts`, blank line, then one line per stat `Stat N: [emojiRow] / [emojiRow] / ...` where each guess is 5 emojis (🟩 bull / 🟥 miss); stat labels are anonymous (`Stat 1`, `Stat 2`, `Stat 3`); no country names; pure function (Gate IV)
-- [X] T036 [US2] Implement `src/components/game/ResultCard.tsx`: accepts `state: GameState`, `puzzleNumber: number`; renders `<p>Rankle #{puzzleNumber} — {state.finalScore} pts</p>`; renders emoji grid — one row per guess per stat as `<FeedbackRow>`; renders share button; on click calls `navigator.clipboard.writeText(buildShareText(state, puzzleNumber))`, catches rejection, falls back to `navigator.share` if available, shows "Copied!" confirmation for 2 seconds; Tailwind-only styles (Gate: Styling)
+- [X] T035 [US2] Add `buildShareText(state: GameState, puzzleNumber: number): string` to `src/lib/scoring.ts`: header `WorldOrder #N — X pts`, blank line, then one line per stat `Stat N: [emojiRow] / [emojiRow] / ...` where each guess is 5 emojis (🟩 bull / 🟥 miss); stat labels are anonymous (`Stat 1`, `Stat 2`, `Stat 3`); no country names; pure function (Gate IV)
+- [X] T036 [US2] Implement `src/components/game/ResultCard.tsx`: accepts `state: GameState`, `puzzleNumber: number`; renders `<p>WorldOrder #{puzzleNumber} — {state.finalScore} pts</p>`; renders emoji grid — one row per guess per stat as `<FeedbackRow>`; renders share button; on click calls `navigator.clipboard.writeText(buildShareText(state, puzzleNumber))`, catches rejection, falls back to `navigator.share` if available, shows "Copied!" confirmation for 2 seconds; Tailwind-only styles (Gate: Styling)
 - [X] T037 [US2] Wire `ResultCard` into `src/app/page.tsx`: confirm `<ResultCard state={gameState} puzzleNumber={getPuzzleNumber()} />` is already rendered when `gameState.status === "complete"` (from T031); add `PlayerStats` update — on transition to complete call `savePlayerStats` with incremented `played`, `completed`, updated `totalScore`, `bestScore`, streak fields
 - [X] T038 [US2] Run `npm test` — confirm all US2 tests pass with ≥ 80% global coverage
 

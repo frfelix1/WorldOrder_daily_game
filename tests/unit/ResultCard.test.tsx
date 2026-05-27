@@ -67,7 +67,7 @@ describe('ResultCard', () => {
     fireEvent.click(btn);
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-        expect.stringContaining('Rankle #42'),
+        expect.stringContaining('WorldOrder #42'),
       );
     });
   });
@@ -92,7 +92,7 @@ describe('ResultCard', () => {
     fireEvent.click(btn);
     await waitFor(() => {
       expect(mockShare).toHaveBeenCalledWith(
-        expect.objectContaining({ text: expect.stringContaining('Rankle #42') }),
+        expect.objectContaining({ text: expect.stringContaining('WorldOrder #42') }),
       );
     });
   });

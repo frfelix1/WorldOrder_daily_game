@@ -127,7 +127,7 @@ describe('GamePage', () => {
       finalScore: 150,
       updatedAt: Date.now(),
     };
-    localStorage.setItem('rankle_state', JSON.stringify(completedState));
+    localStorage.setItem('worldorder_state', JSON.stringify(completedState));
 
     render(<GamePage />);
     await waitFor(() => {
@@ -207,10 +207,10 @@ describe('GamePage', () => {
     }, { timeout: 3000 });
   });
 
-  it('renders Rankle title after load', async () => {
+  it('renders WorldOrder title after load', async () => {
     render(<GamePage />);
     await waitFor(() => {
-      expect(screen.getByText('Rankle')).toBeInTheDocument();
+      expect(screen.getByText('WorldOrder')).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
@@ -455,7 +455,7 @@ describe('GamePage — slot restoration and correct guess paths (coverage)', () 
       finalScore: null,
       updatedAt: Date.now(),
     };
-    localStorage.setItem('rankle_state', JSON.stringify(inProgressState));
+    localStorage.setItem('worldorder_state', JSON.stringify(inProgressState));
 
     render(<GamePage />);
 

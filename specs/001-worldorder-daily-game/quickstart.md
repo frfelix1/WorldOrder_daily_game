@@ -1,6 +1,6 @@
-# Quickstart: Rankle Development Setup
+# Quickstart: WorldOrder Development Setup
 
-**Branch**: `001-rankle-daily-game`
+**Branch**: `001-worldorder-daily-game`
 
 ## Prerequisites
 
@@ -261,4 +261,4 @@ npm test
 | `src/types/index.ts` | Shared TypeScript interfaces |
 | `data/puzzles/YYYY-MM-DD.json` | Daily puzzle content files |
 | `public/flags/` | Self-hosted SVG flag assets |
-| `specs/001-rankle-daily-game/` | Spec, plan, data model, contracts |
+| `specs/001-worldorder-daily-game/` | Spec, plan, data model, contracts |

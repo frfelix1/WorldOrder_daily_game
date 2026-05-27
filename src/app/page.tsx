@@ -306,7 +306,7 @@ export default function GamePage() {
               className="text-shimmer-gold tracking-[0.3em] text-3xl"
               style={{ fontFamily: 'var(--font-cinzel)', fontWeight: 900 }}
             >
-              Rankle
+              WorldOrder
             </span>
             <p className="text-xs tracking-[0.25em] uppercase" style={{ color: 'var(--text-muted)' }}>
               Loading today&apos;s puzzle
@@ -345,7 +345,7 @@ export default function GamePage() {
             className="text-3xl tracking-[0.25em] mb-3"
             style={{ fontFamily: 'var(--font-cinzel)', fontWeight: 900, color: 'var(--gold)' }}
           >
-            Rankle
+            WorldOrder
           </div>
           <p className="text-sm mb-6 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
             Couldn&apos;t load today&apos;s puzzle.
@@ -519,7 +519,7 @@ export default function GamePage() {
             className="text-shimmer-gold tracking-[0.25em] text-4xl"
             style={{ fontFamily: 'var(--font-cinzel)', fontWeight: 900 }}
           >
-            Rankle
+            WorldOrder
           </h1>
           <div
             className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold tracking-[0.15em] uppercase"

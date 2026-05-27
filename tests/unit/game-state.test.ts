@@ -56,7 +56,7 @@ describe('loadGameState', () => {
   });
 
   it('returns null if localStorage contains invalid JSON', () => {
-    localStorage.setItem('rankle_state', '{invalid json}');
+    localStorage.setItem('worldorder_state', '{invalid json}');
     expect(loadGameState(PUZZLE_NUMBER)).toBeNull();
   });
 });

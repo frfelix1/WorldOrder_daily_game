@@ -225,7 +225,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
             marginBottom: '28px',
           }}
         >
-          Rankle
+          WorldOrder
         </div>
 
         {/* Performance badge */}

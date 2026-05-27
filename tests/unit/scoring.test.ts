@@ -213,10 +213,10 @@ describe('buildShareText', () => {
     };
   }
 
-  it('header starts with "Rankle #N — X pts" where X is in range 0–100', () => {
+  it('header starts with "WorldOrder #N — X pts" where X is in range 0–100', () => {
     const state = makeState([0, 0, 0]);
     const text = buildShareText(state, 42);
-    expect(text.startsWith('Rankle #42 — 100 pts')).toBe(true);
+    expect(text.startsWith('WorldOrder #42 — 100 pts')).toBe(true);
   });
 
   it('has a blank second line', () => {
@@ -237,7 +237,7 @@ describe('buildShareText', () => {
   it('score in header is ≤ 100 for any input', () => {
     const state = makeState([2, 3, 1]);
     const text = buildShareText(state, 5);
-    const match = text.match(/Rankle #5 — (\d+) pts/);
+    const match = text.match(/WorldOrder #5 — (\d+) pts/);
     expect(match).not.toBeNull();
     const score = parseInt(match![1]);
     expect(score).toBeGreaterThanOrEqual(0);

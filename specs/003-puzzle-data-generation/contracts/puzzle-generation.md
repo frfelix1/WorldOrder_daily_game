@@ -1,7 +1,7 @@
 # Contract: Puzzle Generation Pipeline
 
 **Version**: 1.0 | **Date**: 2026-05-27
-**Related**: [`specs/001-rankle-daily-game/contracts/puzzle-api.md`](../../001-rankle-daily-game/contracts/puzzle-api.md)
+**Related**: [`specs/001-worldorder-daily-game/contracts/puzzle-api.md`](../../001-worldorder-daily-game/contracts/puzzle-api.md)
 
 ---
 
@@ -12,7 +12,7 @@ This contract defines the command-line interface and data contracts for the two 
 1. `scripts/build_dataset.py` — builds the local dataset from processed CSVs
 2. `scripts/generate_puzzles.py` — generates puzzle files from the dataset
 
-The output of `generate_puzzles.py` must conform to the existing **Puzzle API contract** (`specs/001-rankle-daily-game/contracts/puzzle-api.md`) exactly. This document covers the pipeline's own interface and the constraints it enforces.
+The output of `generate_puzzles.py` must conform to the existing **Puzzle API contract** (`specs/001-worldorder-daily-game/contracts/puzzle-api.md`) exactly. This document covers the pipeline's own interface and the constraints it enforces.
 
 ---
 

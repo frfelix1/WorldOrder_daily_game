@@ -1,12 +1,12 @@
-# Feature Specification: Rankle — Daily Geography Ranking Game
+# Feature Specification: WorldOrder — Daily Geography Ranking Game
 
-**Feature Branch**: `001-rankle-daily-game`
+**Feature Branch**: `001-worldorder-daily-game`
 
 **Created**: 2026-05-22
 
 **Status**: Draft
 
-**Input**: User description: "Rankle is a daily geography game. 5 countries are presented upfront. 3 stats are revealed one at a time. For each stat the player submits a ranking of the 5 countries and receives positional feedback (bulls only) until solved. Final unified score is shared."
+**Input**: User description: "WorldOrder is a daily geography game. 5 countries are presented upfront. 3 stats are revealed one at a time. For each stat the player submits a ranking of the 5 countries and receives positional feedback (bulls only) until solved. Final unified score is shared."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -151,9 +151,9 @@ Each calendar day a new puzzle is available. Returning players cannot replay yes
 ### Session 2026-05-22 (continued)
 
 - Q: What is the scoring formula? → A: Linear MVP model. Each of the 5 positions across each of the 3 stats is worth up to 10 points. Score per position = `max(10 − 2n, 0)` where `n` = number of wrong guesses before that position was correct. Score starts at 0; higher is better; perfect game = 150 pts.
-- Q: What is the localStorage persistence schema? → A: Single key `rankle_state_v1`. Fields: `puzzleDate` (YYYY-MM-DD), `stats` (array of `{ solved: boolean, guesses: string[][] }`), `score` (number), `completed` (boolean). No solution or feedback stored — solution is re-fetched on reload and feedback is recomputed client-side.
+- Q: What is the localStorage persistence schema? → A: Single key `worldorder_state_v1`. Fields: `puzzleDate` (YYYY-MM-DD), `stats` (array of `{ solved: boolean, guesses: string[][] }`), `score` (number), `completed` (boolean). No solution or feedback stored — solution is re-fetched on reload and feedback is recomputed client-side.
 - Q: What happens when UTC midnight passes mid-session? → A: Hard cutover. On next interaction (submit, reload), if `puzzleDate` in localStorage differs from current UTC date, state is discarded and the new puzzle loads fresh. No grace period.
-- Q: What is the share text format? → A: Header line (`Rankle #N — X pts`), then one line per stat showing guesses separated by ` / `, each guess as 5 emojis: 🟩 = correct position, 🟥 = wrong position. Stat labels are anonymous (`Stat 1` etc.) to avoid spoilers. No country names included.
+- Q: What is the share text format? → A: Header line (`WorldOrder #N — X pts`), then one line per stat showing guesses separated by ` / `, each guess as 5 emojis: 🟩 = correct position, 🟥 = wrong position. Stat labels are anonymous (`Stat 1` etc.) to avoid spoilers. No country names included.
 - Q: What is the score direction and initial value? → A: Score starts at 0; higher is better. Scoring is additive — points are earned as positions are solved.
 
 - Q: When ranking countries by a stat, is there a fixed direction (always highest-to-lowest or always lowest-to-highest), or does each stat specify its own direction? → A: Direction is specified per stat in the puzzle data; each stat includes its own sort direction (e.g., "highest-to-lowest" or "lowest-to-highest"), which is surfaced to the player alongside the stat label and tooltip.

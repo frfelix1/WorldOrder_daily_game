@@ -101,7 +101,7 @@ A player wants to comfortably interact with the country chips in the "Available"
 
 ## Assumptions
 
-- All three improvements target the existing single-page Rankle game. No new pages, routes, or backend services are introduced.
+- All three improvements target the existing single-page WorldOrder game. No new pages, routes, or backend services are introduced.
 - The randomize action pulls from puzzle files that already exist on disk; it does not generate new puzzle data dynamically.
 - Guess history display reuses the country identity data already present in the saved `GameState` — no new data needs to be stored.
 - The country chip redesign targets desktop-first (1280px+); mobile layout is a secondary concern and not required for this feature.

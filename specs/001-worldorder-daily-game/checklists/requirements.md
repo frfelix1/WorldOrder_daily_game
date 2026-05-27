@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Rankle — Daily Geography Ranking Game
+# Specification Quality Checklist: WorldOrder — Daily Geography Ranking Game
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-05-22

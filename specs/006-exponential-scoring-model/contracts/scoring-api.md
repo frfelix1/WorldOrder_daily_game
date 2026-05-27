@@ -126,7 +126,7 @@ export function buildShareText(
 ): string
 ```
 
-**Behavioural change**: The score in the header line (`Rankle #N — X pts`) will now be in range 0–100.
+**Behavioural change**: The score in the header line (`WorldOrder #N — X pts`) will now be in range 0–100.
 
 ---
 

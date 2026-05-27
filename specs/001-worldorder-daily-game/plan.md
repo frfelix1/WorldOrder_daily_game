@@ -1,12 +1,12 @@
-# Implementation Plan: Rankle — Daily Geography Ranking Game
+# Implementation Plan: WorldOrder — Daily Geography Ranking Game
 
-**Branch**: `001-rankle-daily-game` | **Date**: 2026-05-22 | **Spec**: [spec.md](./spec.md)
+**Branch**: `001-worldorder-daily-game` | **Date**: 2026-05-22 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `specs/001-rankle-daily-game/spec.md`
+**Input**: Feature specification from `specs/001-worldorder-daily-game/spec.md`
 
 ## Summary
 
-Rankle is a daily browser-based geography game where players rank five countries against three sequential stats using drag-to-reorder, receive bulls-only positional feedback until each stat is solved, and share a final score. The technical approach is a Next.js 14+ App Router application: a statically-served React client for all game interaction, a lightweight API route that serves the date-keyed daily puzzle, and localStorage for anonymous per-device game state persistence — no accounts, no database.
+WorldOrder is a daily browser-based geography game where players rank five countries against three sequential stats using drag-to-reorder, receive bulls-only positional feedback until each stat is solved, and share a final score. The technical approach is a Next.js 14+ App Router application: a statically-served React client for all game interaction, a lightweight API route that serves the date-keyed daily puzzle, and localStorage for anonymous per-device game state persistence — no accounts, no database.
 
 ## Technical Context
 
@@ -65,7 +65,7 @@ The project constitution (`/.specify/memory/constitution.md`) was ratified
 ### Documentation (this feature)
 
 ```text
-specs/001-rankle-daily-game/
+specs/001-worldorder-daily-game/
 ├── plan.md              # This file
 ├── research.md          # Phase 0 output
 ├── data-model.md        # Phase 1 output

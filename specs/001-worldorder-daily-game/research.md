@@ -1,6 +1,6 @@
-# Research: Rankle — Daily Geography Ranking Game
+# Research: WorldOrder — Daily Geography Ranking Game
 
-**Date**: 2026-05-22 | **Branch**: `001-rankle-daily-game`
+**Date**: 2026-05-22 | **Branch**: `001-worldorder-daily-game`
 
 ## 1. Web Framework
 
@@ -69,7 +69,7 @@
 - Stale state is silently discarded on load, producing a fresh game — no explicit expiry/cleanup logic required
 - Pattern validated by open-source Wordle clones (MikhaD/wordle uses identical approach)
 
-**localStorage key**: `rankle_state` — single object storing `puzzleNumber`, `status`, `guesses`, `runningScore`; lifetime stats in separate key `rankle_stats`.
+**localStorage key**: `worldorder_state` — single object storing `puzzleNumber`, `status`, `guesses`, `runningScore`; lifetime stats in separate key `worldorder_stats`.
 
 **State shape** (see data-model.md for full TypeScript types):
 

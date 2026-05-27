@@ -183,7 +183,7 @@ The drag overlay in `RankingBoard` uses the same flag/text sizes and should be u
 
 The following are explicitly **not changed**:
 
-- `localStorage` keys `rankle_state` / `rankle_stats`
+- `localStorage` keys `worldorder_state` / `worldorder_stats`
 - The `GameState`, `Guess`, `StatSession`, `Country`, `StatDef`, `PuzzleFile`, `PlayerStats` TypeScript interfaces in `src/types/index.ts`
 - API routes `/api/puzzle` and `/api/puzzles`
 - Scoring logic in `src/lib/scoring.ts`

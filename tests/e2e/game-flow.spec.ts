@@ -107,7 +107,7 @@ test.describe('Daily rotation', () => {
     };
 
     await page.addInitScript((state) => {
-      localStorage.setItem('rankle_state', JSON.stringify(state));
+      localStorage.setItem('worldorder_state', JSON.stringify(state));
     }, completedState);
 
     await page.goto('/');

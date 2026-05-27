@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Real Data Sourcing for Rankle Puzzles
+# Specification Quality Checklist: Real Data Sourcing for WorldOrder Puzzles
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-05-23

@@ -142,4 +142,4 @@ One country is drawn from each band. This is checked per-stat; if a secondary st
 | Primary stat for quintile | `stats[0]` (first in reveal order) |
 | Quintile satisfiability | Always satisfiable; min band size ~25 countries |
 | Script testing | pytest in `tests/scripts/` |
-| Existing puzzle-api contract | Exists at `specs/001-rankle-daily-game/contracts/puzzle-api.md`; no changes needed |
+| Existing puzzle-api contract | Exists at `specs/001-worldorder-daily-game/contracts/puzzle-api.md`; no changes needed |

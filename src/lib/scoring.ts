@@ -59,7 +59,7 @@ export function totalScore(statSessions: StatSession[]): number {
 /**
  * Builds the share text for the result card.
  * Format:
- *   Rankle #N — X pts
+ *   WorldOrder #N — X pts
  *
  *   Stat 1: 🟩🟥... / 🟩🟩🟩🟩🟩
  *   Stat 2: ...
@@ -70,7 +70,7 @@ export function buildShareText(
   puzzleNumber: number,
 ): string {
   const score = state.finalScore ?? 0;
-  const header = `Rankle #${puzzleNumber} — ${score} pts`;
+  const header = `WorldOrder #${puzzleNumber} — ${score} pts`;
 
   const statLines = state.stats.map((session, i) => {
     const rows = session.guesses.map((guess) =>

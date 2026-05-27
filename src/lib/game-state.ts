@@ -1,7 +1,7 @@
 import type { GameState, PlayerStats } from '../types';
 
-const GAME_STATE_KEY = 'rankle_state';
-const PLAYER_STATS_KEY = 'rankle_stats';
+const GAME_STATE_KEY = 'worldorder_state';
+const PLAYER_STATS_KEY = 'worldorder_stats';
 
 /**
  * Loads the game state for the given puzzle number.

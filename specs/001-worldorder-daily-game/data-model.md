@@ -1,6 +1,6 @@
-# Data Model: Rankle — Daily Geography Ranking Game
+# Data Model: WorldOrder — Daily Geography Ranking Game
 
-**Date**: 2026-05-22 | **Branch**: `001-rankle-daily-game`
+**Date**: 2026-05-22 | **Branch**: `001-worldorder-daily-game`
 
 ## Overview
 
@@ -73,7 +73,7 @@ ACTIVE → SOLVED (when player submits a guess with all 5 bulls)
 
 ## Game Session Domain (Client / localStorage)
 
-### `GameState` (key: `rankle_state`)
+### `GameState` (key: `worldorder_state`)
 
 The full persisted session for the current (or most recently played) puzzle.
 
@@ -112,7 +112,7 @@ interface Guess {
 **Derived field** (computed at read time, not stored):
 - `bullCount = bulls.filter(Boolean).length` — 5 bulls means the stat is solved
 
-### `PlayerStats` (key: `rankle_stats`, never wiped)
+### `PlayerStats` (key: `worldorder_stats`, never wiped)
 
 Lifetime statistics accumulated across all completed puzzles.
 
@@ -180,7 +180,7 @@ type EmojiRow = string;       // e.g. "🟩🟥🟩🟥🟩" — one emoji per c
 
 **Share text format**:
 ```
-Rankle #42 — 130 pts
+WorldOrder #42 — 130 pts
 
 Stat 1: 🟩🟥🟩🟥🟩 / 🟩🟩🟩🟩🟩
 Stat 2: 🟩🟩🟩🟩🟩

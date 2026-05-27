@@ -1,6 +1,6 @@
 # Stat Categories and Data Sources
 
-This document lists all candidate stat categories and individual stats for Rankle puzzles, along with the recommended primary data source for each. Wikipedia is the default source where it maintains a reliable list article — it provides stable, human-readable tables that are easy to scrape or reference manually. Alternative sources are noted where Wikipedia coverage is thin or unreliable.
+This document lists all candidate stat categories and individual stats for WorldOrder puzzles, along with the recommended primary data source for each. Wikipedia is the default source where it maintains a reliable list article — it provides stable, human-readable tables that are easy to scrape or reference manually. Alternative sources are noted where Wikipedia coverage is thin or unreliable.
 
 For each stat the direction column indicates the natural ranking direction used in puzzle generation (`desc` = highest value ranks first, `asc` = lowest value ranks first).
 

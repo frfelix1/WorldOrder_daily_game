@@ -27,7 +27,7 @@ Templates reviewed:
 Deferred TODOs: None — all fields resolved.
 -->
 
-# Rankle Constitution
+# WorldOrder Constitution
 
 ## Core Principles
 

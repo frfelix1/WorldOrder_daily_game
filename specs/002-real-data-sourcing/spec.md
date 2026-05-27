@@ -1,4 +1,4 @@
-# Feature Specification: Real Data Sourcing for Rankle Puzzles
+# Feature Specification: Real Data Sourcing for WorldOrder Puzzles
 
 **Feature Branch**: `002-real-data-sourcing`
 
