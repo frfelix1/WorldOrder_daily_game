@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import type { GameState, PuzzleFile } from '../../types';
 import { buildShareText } from '../../lib/scoring';
 import { FeedbackRow } from './FeedbackRow';
+import { CorrectValuesRow } from './CorrectValuesRow';
 
 interface ResultCardProps {
   state: GameState;
@@ -95,7 +96,7 @@ function PerformanceBadge({ perf }: { perf: ReturnType<typeof performanceLabel> 
 }
 
 export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
-  const [copied, setCopied] = useState(false);
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'error'>('idle');
   const [showConfetti, setShowConfetti] = useState(false);
 
   const finalScore = state.finalScore ?? state.runningScore;
@@ -134,21 +135,12 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
   async function handleShare() {
     const text = buildShareText(state, puzzleNumber);
     try {
-      if (navigator.share) {
-        await navigator.share({ text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
+      await navigator.clipboard.writeText(text);
+      setShareState('copied');
+      setTimeout(() => setShareState('idle'), 2000);
     } catch {
-      try {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch {
-        // Clipboard write failed
-      }
+      setShareState('error');
+      setTimeout(() => setShareState('idle'), 2000);
     }
   }
 
@@ -284,13 +276,13 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
             }}
           >
             <div
+              data-testid="score-bar"
               style={{
                 height: '100%',
                 borderRadius: '999px',
                 width: `${pct}%`,
                 background: `linear-gradient(90deg, var(--gold-dim), ${perf.color})`,
                 boxShadow: `0 0 12px ${perf.glow}`,
-                transition: 'width 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
               }}
             />
           </div>
@@ -335,7 +327,11 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
             }}
           />
           {state.stats.map((session, statIdx) => (
-            <div key={session.statId} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <section
+              key={session.statId}
+              aria-label={puzzle.stats[statIdx]?.label ?? `Stat ${statIdx + 1}`}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+            >
               <p
                 style={{
                   fontSize: '9px',
@@ -356,7 +352,8 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
                   guessIndex={guessIdx + 1}
                 />
               ))}
-            </div>
+              <CorrectValuesRow stat={puzzle.stats[statIdx]} countries={puzzle.countries} />
+            </section>
           ))}
         </div>
 
@@ -391,26 +388,26 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
             fontFamily: 'var(--font-cinzel)',
             cursor: 'pointer',
             transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-            background: copied
+            background: shareState !== 'idle'
               ? 'linear-gradient(135deg, #00c070, var(--success))'
               : `linear-gradient(135deg, var(--gold-dim), var(--gold), var(--gold-bright))`,
             color: '#000',
-            border: copied
+            border: shareState !== 'idle'
               ? '1px solid rgba(0,232,150,0.4)'
               : '1px solid rgba(245,215,110,0.4)',
-            boxShadow: copied
+            boxShadow: shareState !== 'idle'
               ? '0 0 24px rgba(0,232,150,0.4)'
               : `0 0 24px rgba(232,197,71,0.3), 0 4px 16px rgba(0,0,0,0.4)`,
           }}
           onMouseEnter={(e) => {
-            if (!copied) {
+            if (shareState === 'idle') {
               (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
               (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 36px rgba(232,197,71,0.5), 0 8px 24px rgba(0,0,0,0.4)';
             }
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = copied
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = shareState !== 'idle'
               ? '0 0 24px rgba(0,232,150,0.4)'
               : '0 0 24px rgba(232,197,71,0.3), 0 4px 16px rgba(0,0,0,0.4)';
           }}
@@ -421,7 +418,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
             (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
           }}
         >
-          {copied ? 'Copied!' : 'Share Result'}
+          {shareState === 'copied' ? 'Copied!' : shareState === 'error' ? 'Copy failed' : 'Share Result'}
         </button>
 
         {/* Bottom decorative line */}

@@ -51,6 +51,7 @@ export function ScoreDisplay({ score }: ScoreDisplayProps) {
         }}
       >
         <div
+          data-testid="score-bar"
           style={{
             height: '100%',
             borderRadius: '999px',
@@ -58,12 +59,9 @@ export function ScoreDisplay({ score }: ScoreDisplayProps) {
             backgroundImage: pct > 0
               ? 'linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-bright))'
               : 'none',
-            backgroundSize: '200% auto',
-            animation: pct > 0 ? 'shimmerGold 2.5s linear infinite' : 'none',
             boxShadow: pct > 0
               ? '0 0 10px rgba(232, 197, 71, 0.6), 0 0 4px rgba(232, 197, 71, 0.9)'
               : 'none',
-            transition: 'width 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
           }}
         />
       </div>
