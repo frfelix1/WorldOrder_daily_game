@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-08",
+  "countries": [
+    {
+      "id": "TWN",
+      "name": "Taiwan",
+      "flagCode": "tw"
+    },
+    {
+      "id": "BHS",
+      "name": "Bahamas",
+      "flagCode": "bs"
+    },
+    {
+      "id": "LBN",
+      "name": "Lebanon",
+      "flagCode": "lb"
+    },
+    {
+      "id": "CRI",
+      "name": "Costa Rica",
+      "flagCode": "cr"
+    },
+    {
+      "id": "NER",
+      "name": "Niger",
+      "flagCode": "ne"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "CO\u2082 per Capita",
+      "category": "environment",
+      "tooltip": "CO\u2082 emissions per capita in tonnes per year. Source: Global Carbon Project, 2022.",
+      "direction": "desc",
+      "solution": [
+        "TWN",
+        "BHS",
+        "LBN",
+        "CRI",
+        "NER"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Passport Power",
+      "category": "culture",
+      "tooltip": "Number of countries accessible without a prior visa. Source: Henley Passport Index, 2024.",
+      "direction": "desc",
+      "solution": [
+        "BHS",
+        "CRI",
+        "TWN",
+        "NER",
+        "LBN"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Life Expectancy",
+      "category": "health",
+      "tooltip": "Average life expectancy at birth in years. Source: WHO, 2022.",
+      "direction": "desc",
+      "solution": [
+        "CRI",
+        "LBN",
+        "TWN",
+        "BHS",
+        "NER"
+      ]
+    }
+  ]
+}

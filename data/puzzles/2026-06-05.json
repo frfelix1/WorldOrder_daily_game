@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-05",
+  "countries": [
+    {
+      "id": "IRL",
+      "name": "Ireland",
+      "flagCode": "ie"
+    },
+    {
+      "id": "VCT",
+      "name": "Saint Vincent and the Grenadines",
+      "flagCode": "vc"
+    },
+    {
+      "id": "CUB",
+      "name": "Cuba",
+      "flagCode": "cu"
+    },
+    {
+      "id": "TUR",
+      "name": "T\u00fcrkiye",
+      "flagCode": "tr"
+    },
+    {
+      "id": "IRN",
+      "name": "Iran",
+      "flagCode": "ir"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Alcohol Consumption",
+      "category": "culture",
+      "tooltip": "Total alcohol consumption per person per year in litres of pure alcohol. Source: WHO, 2019.",
+      "direction": "desc",
+      "solution": [
+        "IRL",
+        "VCT",
+        "CUB",
+        "TUR",
+        "IRN"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Coastline Length",
+      "category": "geography",
+      "tooltip": "Total coastline length in kilometres (0 for landlocked countries). Source: CIA World Factbook, 2023.",
+      "direction": "desc",
+      "solution": [
+        "TUR",
+        "CUB",
+        "IRN",
+        "IRL",
+        "VCT"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Obesity Rate",
+      "category": "health",
+      "tooltip": "Percentage of adults classified as obese (BMI \u2265 30). Source: WHO, 2022.",
+      "direction": "desc",
+      "solution": [
+        "TUR",
+        "VCT",
+        "IRL",
+        "IRN",
+        "CUB"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-11",
+  "countries": [
+    {
+      "id": "GEO",
+      "name": "Georgia",
+      "flagCode": "ge"
+    },
+    {
+      "id": "VCT",
+      "name": "Saint Vincent and the Grenadines",
+      "flagCode": "vc"
+    },
+    {
+      "id": "BHS",
+      "name": "Bahamas",
+      "flagCode": "bs"
+    },
+    {
+      "id": "TUR",
+      "name": "T\u00fcrkiye",
+      "flagCode": "tr"
+    },
+    {
+      "id": "DZA",
+      "name": "Algeria",
+      "flagCode": "dz"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Alcohol Consumption",
+      "category": "culture",
+      "tooltip": "Total alcohol consumption per person per year in litres of pure alcohol. Source: WHO, 2019.",
+      "direction": "desc",
+      "solution": [
+        "GEO",
+        "VCT",
+        "BHS",
+        "TUR",
+        "DZA"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Population",
+      "category": "demographics",
+      "tooltip": "Total resident population. Source: Wikipedia \u2014 List of countries by population, 2024.",
+      "direction": "desc",
+      "solution": [
+        "TUR",
+        "DZA",
+        "GEO",
+        "BHS",
+        "VCT"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "GDP per Capita",
+      "category": "economy",
+      "tooltip": "Gross domestic product divided by population in US dollars. Source: World Bank, 2023.",
+      "direction": "desc",
+      "solution": [
+        "BHS",
+        "TUR",
+        "GEO",
+        "VCT",
+        "DZA"
+      ]
+    }
+  ]
+}

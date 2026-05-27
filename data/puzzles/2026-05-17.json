@@ -1,0 +1,36 @@
+{
+  "date": "2026-05-17",
+  "countries": [
+    { "id": "KOR", "name": "South Korea", "flagCode": "kr" },
+    { "id": "JPN", "name": "Japan",       "flagCode": "jp" },
+    { "id": "AUS", "name": "Australia",   "flagCode": "au" },
+    { "id": "CAN", "name": "Canada",      "flagCode": "ca" },
+    { "id": "GBR", "name": "United Kingdom", "flagCode": "gb" }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Life Expectancy",
+      "category": "health",
+      "tooltip": "Average life expectancy at birth in years.",
+      "direction": "desc",
+      "solution": ["JPN", "KOR", "AUS", "CAN", "GBR"]
+    },
+    {
+      "id": "stat_2",
+      "label": "GDP (nominal)",
+      "category": "economy",
+      "tooltip": "Gross domestic product at current prices in USD, World Bank latest estimate.",
+      "direction": "desc",
+      "solution": ["JPN", "GBR", "CAN", "AUS", "KOR"]
+    },
+    {
+      "id": "stat_3",
+      "label": "GDP per Capita",
+      "category": "economy",
+      "tooltip": "GDP divided by total population — a measure of average prosperity.",
+      "direction": "desc",
+      "solution": ["AUS", "CAN", "GBR", "JPN", "KOR"]
+    }
+  ]
+}

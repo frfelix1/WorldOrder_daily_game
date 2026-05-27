@@ -1,0 +1,36 @@
+{
+  "date": "2026-05-18",
+  "countries": [
+    { "id": "SAU", "name": "Saudi Arabia", "flagCode": "sa" },
+    { "id": "RUS", "name": "Russia",       "flagCode": "ru" },
+    { "id": "TUR", "name": "Turkey",       "flagCode": "tr" },
+    { "id": "ZAF", "name": "South Africa", "flagCode": "za" },
+    { "id": "ARG", "name": "Argentina",    "flagCode": "ar" }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "GDP (nominal)",
+      "category": "economy",
+      "tooltip": "Gross domestic product at current prices in USD, World Bank latest estimate.",
+      "direction": "desc",
+      "solution": ["RUS", "SAU", "TUR", "ARG", "ZAF"]
+    },
+    {
+      "id": "stat_2",
+      "label": "CO₂ per Capita",
+      "category": "environment",
+      "tooltip": "Annual CO₂ emissions per person in metric tonnes.",
+      "direction": "desc",
+      "solution": ["SAU", "RUS", "ZAF", "TUR", "ARG"]
+    },
+    {
+      "id": "stat_3",
+      "label": "Life Expectancy",
+      "category": "health",
+      "tooltip": "Average life expectancy at birth in years.",
+      "direction": "desc",
+      "solution": ["SAU", "TUR", "ARG", "RUS", "ZAF"]
+    }
+  ]
+}

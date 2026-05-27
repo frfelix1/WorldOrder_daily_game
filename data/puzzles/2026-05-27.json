@@ -1,0 +1,36 @@
+{
+  "date": "2026-05-27",
+  "countries": [
+    { "id": "JPN", "name": "Japan",          "flagCode": "jp" },
+    { "id": "GBR", "name": "United Kingdom", "flagCode": "gb" },
+    { "id": "FRA", "name": "France",         "flagCode": "fr" },
+    { "id": "IND", "name": "India",          "flagCode": "in" },
+    { "id": "ZAF", "name": "South Africa",   "flagCode": "za" }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Life Expectancy",
+      "category": "health",
+      "tooltip": "Average life expectancy at birth in years.",
+      "direction": "desc",
+      "solution": ["JPN", "FRA", "GBR", "IND", "ZAF"]
+    },
+    {
+      "id": "stat_2",
+      "label": "GDP (nominal)",
+      "category": "economy",
+      "tooltip": "Gross domestic product at current prices in USD, World Bank latest estimate.",
+      "direction": "desc",
+      "solution": ["JPN", "IND", "GBR", "FRA", "ZAF"]
+    },
+    {
+      "id": "stat_3",
+      "label": "CO₂ per Capita",
+      "category": "environment",
+      "tooltip": "Annual CO₂ emissions per person in metric tonnes.",
+      "direction": "desc",
+      "solution": ["JPN", "ZAF", "GBR", "FRA", "IND"]
+    }
+  ]
+}

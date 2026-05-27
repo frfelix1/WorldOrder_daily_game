@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-18",
+  "countries": [
+    {
+      "id": "PER",
+      "name": "Peru",
+      "flagCode": "pe"
+    },
+    {
+      "id": "LBN",
+      "name": "Lebanon",
+      "flagCode": "lb"
+    },
+    {
+      "id": "SLV",
+      "name": "El Salvador",
+      "flagCode": "sv"
+    },
+    {
+      "id": "TGO",
+      "name": "Togo",
+      "flagCode": "tg"
+    },
+    {
+      "id": "QAT",
+      "name": "Qatar",
+      "flagCode": "qa"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Highest Elevation",
+      "category": "geography",
+      "tooltip": "Altitude of the highest point in the country in metres above sea level. Source: Wikipedia \u2014 List of countries by highest point, 2023.",
+      "direction": "desc",
+      "solution": [
+        "PER",
+        "LBN",
+        "SLV",
+        "TGO",
+        "QAT"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Passport Power",
+      "category": "culture",
+      "tooltip": "Number of countries accessible without a prior visa. Source: Henley Passport Index, 2024.",
+      "direction": "desc",
+      "solution": [
+        "PER",
+        "SLV",
+        "QAT",
+        "TGO",
+        "LBN"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Human Development Index",
+      "category": "demographics",
+      "tooltip": "UNDP Human Development Index score (0 = lowest, 1 = highest). Source: UNDP, 2022.",
+      "direction": "desc",
+      "solution": [
+        "QAT",
+        "PER",
+        "LBN",
+        "SLV",
+        "TGO"
+      ]
+    }
+  ]
+}

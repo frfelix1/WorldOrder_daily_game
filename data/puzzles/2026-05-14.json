@@ -1,0 +1,36 @@
+{
+  "date": "2026-05-14",
+  "countries": [
+    { "id": "USA", "name": "United States", "flagCode": "us" },
+    { "id": "BRA", "name": "Brazil",        "flagCode": "br" },
+    { "id": "MEX", "name": "Mexico",        "flagCode": "mx" },
+    { "id": "ARG", "name": "Argentina",     "flagCode": "ar" },
+    { "id": "CAN", "name": "Canada",        "flagCode": "ca" }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Land Area",
+      "category": "geography",
+      "tooltip": "Total land area in square kilometres.",
+      "direction": "desc",
+      "solution": ["CAN", "USA", "BRA", "ARG", "MEX"]
+    },
+    {
+      "id": "stat_2",
+      "label": "Population",
+      "category": "demographics",
+      "tooltip": "Total resident population as of the most recent census estimate.",
+      "direction": "desc",
+      "solution": ["USA", "BRA", "MEX", "ARG", "CAN"]
+    },
+    {
+      "id": "stat_3",
+      "label": "CO₂ per Capita",
+      "category": "environment",
+      "tooltip": "Annual CO₂ emissions per person in metric tonnes.",
+      "direction": "desc",
+      "solution": ["USA", "CAN", "ARG", "MEX", "BRA"]
+    }
+  ]
+}
