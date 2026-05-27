@@ -119,6 +119,23 @@ test.describe('Daily rotation', () => {
   });
 });
 
+test.describe('US3 — Zero-maintenance dynamic generation', () => {
+  test('game loads valid puzzle for a future date with no pre-generated file (2027-01-01)', async ({ page }) => {
+    // Navigate with a date far in the future — guaranteed to have no pre-generated file
+    await page.goto('/?date=2027-01-01');
+
+    // Game should not show an error state
+    await expect(page.locator('[data-testid="error-state"]')).not.toBeVisible();
+
+    // Wait for and assert exactly 5 pool chips are rendered
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+    await expect(page.locator('[data-testid="pool-chip"]')).toHaveCount(5);
+
+    // The stat panel should be visible
+    await expect(page.locator('[data-testid="stat-panel"]')).toBeVisible();
+  });
+});
+
 test.describe('US3 — Pool chip size', () => {
   test('each pool chip bounding box height is >= 44px', async ({ page }) => {
     await page.goto('/');

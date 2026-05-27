@@ -46,4 +46,38 @@ describe.skipIf(!RUN_INTEGRATION)('GET /api/puzzle', () => {
     const body = await res.json();
     expect(body).toHaveProperty('error', 'not_found');
   });
+
+  // Generation-specific assertions: verify puzzles are served for dates
+  // beyond any pre-generated files (dynamic generation must be working).
+  it('returns 200 for a future date with no pre-generated file (2027-06-01)', async () => {
+    const res = await fetch(`${BASE_URL}/api/puzzle?date=2027-06-01`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toHaveProperty('date', '2027-06-01');
+    expect(body.countries).toHaveLength(5);
+    expect(body.stats).toHaveLength(3);
+  });
+
+  it('Cache-Control header is set on generated puzzle response', async () => {
+    const res = await fetch(`${BASE_URL}/api/puzzle?date=2027-06-01`);
+    const cacheControl = res.headers.get('cache-control') ?? '';
+    expect(cacheControl).toContain('max-age=86400');
+    expect(cacheControl).toContain('s-maxage=86400');
+  });
+
+  it('two requests for the same date return identical puzzle content', async () => {
+    const [res1, res2] = await Promise.all([
+      fetch(`${BASE_URL}/api/puzzle?date=2027-06-15`),
+      fetch(`${BASE_URL}/api/puzzle?date=2027-06-15`),
+    ]);
+    expect(res1.status).toBe(200);
+    expect(res2.status).toBe(200);
+    const [body1, body2] = await Promise.all([res1.json(), res2.json()]);
+    expect(body1.countries.map((c: { id: string }) => c.id).sort()).toEqual(
+      body2.countries.map((c: { id: string }) => c.id).sort(),
+    );
+    for (let i = 0; i < 3; i++) {
+      expect(body1.stats[i].solution).toEqual(body2.stats[i].solution);
+    }
+  });
 });

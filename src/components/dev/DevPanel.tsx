@@ -15,7 +15,7 @@ export function DevPanel({ currentDate, todayDate, onDateChange }: DevPanelProps
   useEffect(() => {
     fetch('/api/puzzles')
       .then((r) => r.json())
-      .then((data: { dates: string[] }) => setDates(data.dates))
+      .then((data: string[]) => setDates(data))
       .catch(() => {});
   }, []);
 

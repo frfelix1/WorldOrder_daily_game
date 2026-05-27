@@ -1,3 +1,37 @@
+// Dataset domain (server / generation)
+
+/** One country's value for a single stat, as stored in data/dataset.json */
+export interface DatasetEntry {
+  id: string;         // ISO 3166-1 alpha-3, e.g. "JPN"
+  name: string;       // Display name, e.g. "Japan"
+  flagCode: string;   // ISO 3166-1 alpha-2 lowercase, e.g. "jp"
+  value: number;      // Raw stat value
+  rank: number;       // Integer rank, 1 = highest/best
+  tied: boolean;      // True if two or more countries share this rank
+  zeroValue: boolean; // True if value is 0 (special quintile banding treatment)
+  available: boolean; // True if this country is eligible for puzzle selection
+}
+
+/** One complete stat definition with all country entries */
+export interface DatasetStat {
+  label: string;
+  category: string;
+  direction: 'asc' | 'desc';
+  unit: string;
+  source: string;
+  dataYear: number;
+  tooltip: string;
+  entries: DatasetEntry[];
+}
+
+/** The full parsed data/dataset.json — loaded once, used by the generator */
+export interface Dataset {
+  generatedAt: string;                   // ISO timestamp (informational)
+  countryCount: number;                  // Total countries represented
+  statCount: number;                     // Total stat definitions
+  stats: Record<string, DatasetStat>;    // Keyed by stat_id (e.g. "area", "population")
+}
+
 // Puzzle domain (server / API)
 
 export interface Country {

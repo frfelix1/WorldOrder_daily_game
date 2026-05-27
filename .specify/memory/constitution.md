@@ -86,10 +86,14 @@ be set on every API response. Page TTI ≤ 1.5s on a 4G connection. Drag
 animations MUST use CSS `transform` only — layout-triggering properties
 (`top`, `left`, `width`) during drag are forbidden.
 
-**Puzzle Data Integrity**: Every new puzzle file MUST satisfy: solution arrays
-are valid permutations of `countries[*].id`; no ties in stat values; stats
-span ≥ 2 distinct categories. The authoring checklist in
-`contracts/puzzle-api.md` MUST be followed before merging any puzzle file.
+**Puzzle Data Integrity**: Puzzles are generated at runtime by `src/lib/puzzle-generator.ts`
+using a seeded Mulberry32 PRNG (seed = `BASE_SEED(42) + puzzleNumber + attemptIndex`).
+No `data/puzzles/*.json` files exist or should be committed — the generator is
+the sole authoritative source. The generator enforces: solution arrays are valid
+permutations of the selected `countries[*].id`; no ties in stat values within a
+puzzle; stats span ≥ 2 distinct quintile bands; consecutive-day country sets are
+distinct (up to `MAX_ATTEMPTS=20` retries). The authoritative dataset is
+`data/dataset.json` (202 countries, 17 stats) and MUST remain committed.
 
 **Styling**: Tailwind utility classes only; no CSS-in-JS, no inline `style={}`
 props. Custom CSS is confined to `globals.css` (third-party imports such as
@@ -111,4 +115,4 @@ updating this file, updating `plan.md`, and a brief justification in the commit
 message. The coverage threshold and the two NON-NEGOTIABLE principles (I and
 II) require explicit rationale to amend.
 
-**Version**: 1.0.0 | **Ratified**: 2026-05-22 | **Last Amended**: 2026-05-22
+**Version**: 1.1.0 | **Ratified**: 2026-05-22 | **Last Amended**: 2026-05-27
