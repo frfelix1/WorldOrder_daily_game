@@ -351,6 +351,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
                 <FeedbackRow
                   key={guessIdx}
                   guess={guess}
+                  countries={puzzle.countries}
                   statIndex={statIdx + 1}
                   guessIndex={guessIdx + 1}
                 />

@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-06",
+  "countries": [
+    {
+      "id": "POL",
+      "name": "Poland",
+      "flagCode": "pl"
+    },
+    {
+      "id": "SOM",
+      "name": "Somalia",
+      "flagCode": "so"
+    },
+    {
+      "id": "BOL",
+      "name": "Bolivia",
+      "flagCode": "bo"
+    },
+    {
+      "id": "TLS",
+      "name": "East Timor",
+      "flagCode": "tl"
+    },
+    {
+      "id": "BHS",
+      "name": "Bahamas",
+      "flagCode": "bs"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Population",
+      "category": "demographics",
+      "tooltip": "Total resident population. Source: Wikipedia \u2014 List of countries by population, 2024.",
+      "direction": "desc",
+      "solution": [
+        "POL",
+        "SOM",
+        "BOL",
+        "TLS",
+        "BHS"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "CO\u2082 per Capita",
+      "category": "environment",
+      "tooltip": "CO\u2082 emissions per capita in tonnes per year. Source: Global Carbon Project, 2022.",
+      "direction": "desc",
+      "solution": [
+        "POL",
+        "BHS",
+        "BOL",
+        "TLS",
+        "SOM"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "GDP per Capita",
+      "category": "economy",
+      "tooltip": "Gross domestic product divided by population in US dollars. Source: World Bank, 2023.",
+      "direction": "desc",
+      "solution": [
+        "BHS",
+        "POL",
+        "BOL",
+        "TLS",
+        "SOM"
+      ]
+    }
+  ]
+}

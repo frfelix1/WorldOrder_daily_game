@@ -423,3 +423,90 @@ describe('RankingBoard drag-and-drop', () => {
     expect(screen.getAllByText('Nigeria')).toHaveLength(1);
   });
 });
+
+// ── US3: PoolChipItem enlarged styling ────────────────────────────────────────
+
+describe('RankingBoard — US3 PoolChipItem enlarged styling', () => {
+  it('each pool chip has padding 12px 20px', () => {
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={emptySlots}
+        lockedSlots={noLocks}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    const chips = screen.getAllByTestId('pool-chip');
+    for (const chip of chips) {
+      expect(chip).toHaveStyle({ padding: '12px 20px' });
+    }
+  });
+
+  it('each pool chip flag span has font-size 22px', () => {
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={emptySlots}
+        lockedSlots={noLocks}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    const chips = screen.getAllByTestId('pool-chip');
+    for (const chip of chips) {
+      // Flag span is the first span (aria-hidden, has fi fi-xx class)
+      const flagSpan = chip.querySelector('span[aria-hidden="true"]') as HTMLElement;
+      expect(flagSpan).not.toBeNull();
+      expect(flagSpan).toHaveStyle({ fontSize: '22px' });
+    }
+  });
+
+  it('each pool chip name span has font-size 15px', () => {
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={emptySlots}
+        lockedSlots={noLocks}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    const chips = screen.getAllByTestId('pool-chip');
+    for (const chip of chips) {
+      // Name span is the second span (not aria-hidden, contains the country name)
+      const nameSpan = chip.querySelector('span:not([aria-hidden])') as HTMLElement;
+      expect(nameSpan).not.toBeNull();
+      expect(nameSpan).toHaveStyle({ fontSize: '15px' });
+    }
+  });
+
+  it('each pool chip flag span has correct fi flag class', () => {
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={emptySlots}
+        lockedSlots={noLocks}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    const chips = screen.getAllByTestId('pool-chip');
+    const expectedFlagCodes = countries.map((c) => `fi-${c.flagCode}`);
+    chips.forEach((chip, i) => {
+      const flagSpan = chip.querySelector('span[aria-hidden="true"]') as HTMLElement;
+      expect(flagSpan.classList.contains('fi')).toBe(true);
+      expect(flagSpan.classList.contains(expectedFlagCodes[i])).toBe(true);
+    });
+  });
+
+  it('each pool chip renders the country name as visible text', () => {
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={emptySlots}
+        lockedSlots={noLocks}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    for (const country of countries) {
+      expect(screen.getByText(country.name)).toBeInTheDocument();
+    }
+  });
+});

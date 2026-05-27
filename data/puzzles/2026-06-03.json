@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-03",
+  "countries": [
+    {
+      "id": "SWE",
+      "name": "Sweden",
+      "flagCode": "se"
+    },
+    {
+      "id": "BHS",
+      "name": "Bahamas",
+      "flagCode": "bs"
+    },
+    {
+      "id": "KWT",
+      "name": "Kuwait",
+      "flagCode": "kw"
+    },
+    {
+      "id": "TGO",
+      "name": "Togo",
+      "flagCode": "tg"
+    },
+    {
+      "id": "SOM",
+      "name": "Somalia",
+      "flagCode": "so"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Passport Power",
+      "category": "culture",
+      "tooltip": "Number of countries accessible without a prior visa. Source: Henley Passport Index, 2024.",
+      "direction": "desc",
+      "solution": [
+        "SWE",
+        "BHS",
+        "KWT",
+        "TGO",
+        "SOM"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Coastline Length",
+      "category": "geography",
+      "tooltip": "Total coastline length in kilometres (0 for landlocked countries). Source: CIA World Factbook, 2023.",
+      "direction": "desc",
+      "solution": [
+        "BHS",
+        "SOM",
+        "SWE",
+        "KWT",
+        "TGO"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Land Area",
+      "category": "geography",
+      "tooltip": "Total land area in square kilometres, excluding inland water. Source: Wikipedia \u2014 List of countries by area, 2023.",
+      "direction": "desc",
+      "solution": [
+        "SOM",
+        "SWE",
+        "TGO",
+        "KWT",
+        "BHS"
+      ]
+    }
+  ]
+}

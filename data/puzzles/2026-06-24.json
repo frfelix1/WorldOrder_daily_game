@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-24",
+  "countries": [
+    {
+      "id": "KOR",
+      "name": "South Korea",
+      "flagCode": "kr"
+    },
+    {
+      "id": "VNM",
+      "name": "Vietnam",
+      "flagCode": "vn"
+    },
+    {
+      "id": "LTU",
+      "name": "Lithuania",
+      "flagCode": "lt"
+    },
+    {
+      "id": "KEN",
+      "name": "Kenya",
+      "flagCode": "ke"
+    },
+    {
+      "id": "GNB",
+      "name": "Guinea-Bissau",
+      "flagCode": "gw"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Life Expectancy",
+      "category": "health",
+      "tooltip": "Average life expectancy at birth in years. Source: WHO, 2022.",
+      "direction": "desc",
+      "solution": [
+        "KOR",
+        "VNM",
+        "LTU",
+        "KEN",
+        "GNB"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Highest Elevation",
+      "category": "geography",
+      "tooltip": "Altitude of the highest point in the country in metres above sea level. Source: Wikipedia \u2014 List of countries by highest point, 2023.",
+      "direction": "desc",
+      "solution": [
+        "KEN",
+        "VNM",
+        "KOR",
+        "LTU",
+        "GNB"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Coastline Length",
+      "category": "geography",
+      "tooltip": "Total coastline length in kilometres (0 for landlocked countries). Source: CIA World Factbook, 2023.",
+      "direction": "desc",
+      "solution": [
+        "VNM",
+        "KOR",
+        "KEN",
+        "GNB",
+        "LTU"
+      ]
+    }
+  ]
+}

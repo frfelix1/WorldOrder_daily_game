@@ -118,3 +118,31 @@ test.describe('Daily rotation', () => {
     await expect(page.locator('[data-testid="ranking-board"]')).not.toBeVisible();
   });
 });
+
+test.describe('US3 — Pool chip size', () => {
+  test('each pool chip bounding box height is >= 44px', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+
+    const chips = page.locator('[data-testid="pool-chip"]');
+    const count = await chips.count();
+    expect(count).toBeGreaterThan(0);
+
+    for (let i = 0; i < count; i++) {
+      const box = await chips.nth(i).boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test('all pool chips are visible within 1280px viewport without horizontal scrollbar', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+
+    const hasHorizontalScroll = await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth
+    );
+    expect(hasHorizontalScroll).toBe(false);
+  });
+});

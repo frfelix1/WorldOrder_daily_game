@@ -21,6 +21,13 @@ export function DevPanel({ currentDate, todayDate, onDateChange }: DevPanelProps
 
   const isOverriding = currentDate !== todayDate;
 
+  function handleRandomize(): void {
+    if (dates.length === 0) return;
+    const picked = dates[Math.floor(Math.random() * dates.length)];
+    onDateChange(picked);
+    setOpen(false);
+  }
+
   return (
     <div
       style={{
@@ -38,6 +45,7 @@ export function DevPanel({ currentDate, todayDate, onDateChange }: DevPanelProps
       {/* Panel */}
       {open && (
         <div
+          data-testid="dev-panel"
           style={{
             background: 'rgba(10,10,14,0.97)',
             border: '1px solid rgba(232,197,71,0.25)',
@@ -62,62 +70,38 @@ export function DevPanel({ currentDate, todayDate, onDateChange }: DevPanelProps
             Seed Override
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-            {dates.map((d) => {
-              const isActive = d === currentDate;
-              const isToday = d === todayDate;
-              return (
-                <button
-                  key={d}
-                  onClick={() => {
-                    onDateChange(d);
-                    setOpen(false);
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '0.5rem',
-                    padding: '0.3rem 0.5rem',
-                    borderRadius: '0.4rem',
-                    border: 'none',
-                    background: isActive
-                      ? 'rgba(232,197,71,0.15)'
-                      : 'transparent',
-                    color: isActive
-                      ? 'rgb(232,197,71)'
-                      : 'rgba(255,255,255,0.55)',
-                    fontSize: '0.75rem',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'background 0.15s',
-                    outline: 'none',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLButtonElement).style.background =
-                        'rgba(255,255,255,0.06)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLButtonElement).style.background =
-                        'transparent';
-                    }
-                  }}
-                >
-                  <span>{d}</span>
-                  <span style={{ fontSize: '0.6rem', opacity: 0.6 }}>
-                    {isToday ? 'today' : isActive ? '●' : ''}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {/* Randomize button */}
+          <button
+            data-testid="dev-randomize"
+            onClick={handleRandomize}
+            disabled={dates.length === 0}
+            style={{
+              width: '100%',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '0.5rem',
+              border: '1px solid rgba(232,197,71,0.3)',
+              background: dates.length === 0
+                ? 'rgba(255,255,255,0.03)'
+                : 'rgba(232,197,71,0.1)',
+              color: dates.length === 0
+                ? 'rgba(255,255,255,0.25)'
+                : 'rgb(232,197,71)',
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+              letterSpacing: '0.08em',
+              cursor: dates.length === 0 ? 'not-allowed' : 'pointer',
+              textAlign: 'center',
+              transition: 'all 0.15s',
+              outline: 'none',
+            }}
+          >
+            {dates.length === 0 ? 'No puzzles available' : '⚡ Randomize'}
+          </button>
 
           {/* Reset to today */}
           {isOverriding && (
             <button
+              data-testid="dev-reset"
               onClick={() => {
                 onDateChange(todayDate);
                 setOpen(false);
@@ -146,6 +130,7 @@ export function DevPanel({ currentDate, todayDate, onDateChange }: DevPanelProps
 
       {/* Toggle button */}
       <button
+        data-testid="dev-toggle"
         onClick={() => setOpen((v) => !v)}
         title="Dev: switch puzzle date"
         style={{

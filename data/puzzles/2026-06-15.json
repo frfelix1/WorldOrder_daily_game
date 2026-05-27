@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-15",
+  "countries": [
+    {
+      "id": "GNQ",
+      "name": "Equatorial Guinea",
+      "flagCode": "gq"
+    },
+    {
+      "id": "MDG",
+      "name": "Madagascar",
+      "flagCode": "mg"
+    },
+    {
+      "id": "ZMB",
+      "name": "Zambia",
+      "flagCode": "zm"
+    },
+    {
+      "id": "BFA",
+      "name": "Burkina Faso",
+      "flagCode": "bf"
+    },
+    {
+      "id": "TCD",
+      "name": "Chad",
+      "flagCode": "td"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Annual Rainfall",
+      "category": "environment",
+      "tooltip": "Mean annual precipitation in millimetres per year. Source: Wikipedia \u2014 List of countries by average annual precipitation, 2023.",
+      "direction": "desc",
+      "solution": [
+        "GNQ",
+        "MDG",
+        "ZMB",
+        "BFA",
+        "TCD"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Alcohol Consumption",
+      "category": "culture",
+      "tooltip": "Total alcohol consumption per person per year in litres of pure alcohol. Source: WHO, 2019.",
+      "direction": "desc",
+      "solution": [
+        "BFA",
+        "GNQ",
+        "ZMB",
+        "TCD",
+        "MDG"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Obesity Rate",
+      "category": "health",
+      "tooltip": "Percentage of adults classified as obese (BMI \u2265 30). Source: WHO, 2022.",
+      "direction": "desc",
+      "solution": [
+        "GNQ",
+        "ZMB",
+        "BFA",
+        "TCD",
+        "MDG"
+      ]
+    }
+  ]
+}

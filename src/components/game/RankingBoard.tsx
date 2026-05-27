@@ -47,8 +47,8 @@ function PoolChipItem({
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        padding: '8px 14px',
+        gap: '10px',
+        padding: '12px 20px',
         borderRadius: '24px',
         border: isDragging
           ? '1px solid rgba(232,197,71,0.5)'
@@ -71,12 +71,12 @@ function PoolChipItem({
     >
       <span
         className={`fi fi-${country.flagCode} flex-shrink-0`}
-        style={{ fontSize: '14px', borderRadius: '2px', overflow: 'hidden' }}
+        style={{ fontSize: '22px', borderRadius: '2px', overflow: 'hidden' }}
         aria-hidden="true"
       />
       <span
         className="font-medium"
-        style={{ fontSize: '13px', color: 'var(--text-primary)' }}
+        style={{ fontSize: '15px', color: 'var(--text-primary)' }}
       >
         {country.name}
       </span>
@@ -518,7 +518,7 @@ export function RankingBoard({
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
-              padding: '10px 16px',
+              padding: '12px 20px',
               borderRadius: '24px',
               border: '1px solid rgba(232,197,71,0.6)',
               background: 'var(--surface-2)',
@@ -531,12 +531,12 @@ export function RankingBoard({
           >
             <span
               className={`fi fi-${activeDragCountry.flagCode}`}
-              style={{ fontSize: '18px', borderRadius: '2px', overflow: 'hidden' }}
+              style={{ fontSize: '22px', borderRadius: '2px', overflow: 'hidden' }}
               aria-hidden="true"
             />
             <span
               className="font-medium"
-              style={{ fontSize: '14px', color: 'var(--text-primary)' }}
+              style={{ fontSize: '15px', color: 'var(--text-primary)' }}
             >
               {activeDragCountry.name}
             </span>

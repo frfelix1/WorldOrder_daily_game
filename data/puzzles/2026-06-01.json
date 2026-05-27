@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-01",
+  "countries": [
+    {
+      "id": "SAU",
+      "name": "Saudi Arabia",
+      "flagCode": "sa"
+    },
+    {
+      "id": "FRA",
+      "name": "France",
+      "flagCode": "fr"
+    },
+    {
+      "id": "TUN",
+      "name": "Tunisia",
+      "flagCode": "tn"
+    },
+    {
+      "id": "LVA",
+      "name": "Latvia",
+      "flagCode": "lv"
+    },
+    {
+      "id": "PSE",
+      "name": "Palestine",
+      "flagCode": "ps"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Land Area",
+      "category": "geography",
+      "tooltip": "Total land area in square kilometres, excluding inland water. Source: Wikipedia \u2014 List of countries by area, 2023.",
+      "direction": "desc",
+      "solution": [
+        "SAU",
+        "FRA",
+        "TUN",
+        "LVA",
+        "PSE"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Internet Speed",
+      "category": "culture",
+      "tooltip": "Median fixed broadband download speed in megabits per second. Source: Ookla Speedtest Global Index, 2023.",
+      "direction": "desc",
+      "solution": [
+        "FRA",
+        "SAU",
+        "LVA",
+        "PSE",
+        "TUN"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Coastline Length",
+      "category": "geography",
+      "tooltip": "Total coastline length in kilometres (0 for landlocked countries). Source: CIA World Factbook, 2023.",
+      "direction": "desc",
+      "solution": [
+        "FRA",
+        "SAU",
+        "TUN",
+        "LVA",
+        "PSE"
+      ]
+    }
+  ]
+}

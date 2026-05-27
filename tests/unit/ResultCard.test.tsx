@@ -97,3 +97,40 @@ describe('ResultCard', () => {
     });
   });
 });
+
+describe('ResultCard — performanceLabel variants', () => {
+  beforeEach(() => {
+    vi.stubGlobal('navigator', {
+      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+      share: undefined,
+    });
+  });
+
+  function makeState(finalScore: number): GameState {
+    return {
+      ...mockState,
+      runningScore: finalScore,
+      finalScore,
+    };
+  }
+
+  it('shows Excellent label for score >= 120', () => {
+    render(<ResultCard state={makeState(130)} puzzleNumber={1} puzzle={mockPuzzle} />);
+    expect(screen.getByRole('img', { name: /excellent/i })).toBeInTheDocument();
+  });
+
+  it('shows Great label for score >= 90', () => {
+    render(<ResultCard state={makeState(100)} puzzleNumber={1} puzzle={mockPuzzle} />);
+    expect(screen.getByRole('img', { name: /great/i })).toBeInTheDocument();
+  });
+
+  it('shows Good label for score >= 60', () => {
+    render(<ResultCard state={makeState(70)} puzzleNumber={1} puzzle={mockPuzzle} />);
+    expect(screen.getByRole('img', { name: /good/i })).toBeInTheDocument();
+  });
+
+  it('shows Keep Exploring label for score below 60', () => {
+    render(<ResultCard state={makeState(40)} puzzleNumber={1} puzzle={mockPuzzle} />);
+    expect(screen.getByRole('img', { name: /keep exploring/i })).toBeInTheDocument();
+  });
+});

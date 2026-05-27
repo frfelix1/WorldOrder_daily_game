@@ -1,0 +1,74 @@
+{
+  "date": "2026-05-29",
+  "countries": [
+    {
+      "id": "KWT",
+      "name": "Kuwait",
+      "flagCode": "kw"
+    },
+    {
+      "id": "ARG",
+      "name": "Argentina",
+      "flagCode": "ar"
+    },
+    {
+      "id": "IDN",
+      "name": "Indonesia",
+      "flagCode": "id"
+    },
+    {
+      "id": "KGZ",
+      "name": "Kyrgyzstan",
+      "flagCode": "kg"
+    },
+    {
+      "id": "GIN",
+      "name": "Guinea",
+      "flagCode": "gn"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "CO\u2082 per Capita",
+      "category": "environment",
+      "tooltip": "CO\u2082 emissions per capita in tonnes per year. Source: Global Carbon Project, 2022.",
+      "direction": "desc",
+      "solution": [
+        "KWT",
+        "ARG",
+        "IDN",
+        "KGZ",
+        "GIN"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "Population",
+      "category": "demographics",
+      "tooltip": "Total resident population. Source: Wikipedia \u2014 List of countries by population, 2024.",
+      "direction": "desc",
+      "solution": [
+        "IDN",
+        "ARG",
+        "GIN",
+        "KGZ",
+        "KWT"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Forest Coverage",
+      "category": "environment",
+      "tooltip": "Percentage of land area covered by forest. Source: World Bank, 2021.",
+      "direction": "desc",
+      "solution": [
+        "IDN",
+        "GIN",
+        "ARG",
+        "KGZ",
+        "KWT"
+      ]
+    }
+  ]
+}

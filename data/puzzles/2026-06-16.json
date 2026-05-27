@@ -1,0 +1,74 @@
+{
+  "date": "2026-06-16",
+  "countries": [
+    {
+      "id": "MMR",
+      "name": "Myanmar",
+      "flagCode": "mm"
+    },
+    {
+      "id": "HND",
+      "name": "Honduras",
+      "flagCode": "hn"
+    },
+    {
+      "id": "ZWE",
+      "name": "Zimbabwe",
+      "flagCode": "zw"
+    },
+    {
+      "id": "SWZ",
+      "name": "Eswatini",
+      "flagCode": "sz"
+    },
+    {
+      "id": "MLT",
+      "name": "Malta",
+      "flagCode": "mt"
+    }
+  ],
+  "stats": [
+    {
+      "id": "stat_1",
+      "label": "Highest Elevation",
+      "category": "geography",
+      "tooltip": "Altitude of the highest point in the country in metres above sea level. Source: Wikipedia \u2014 List of countries by highest point, 2023.",
+      "direction": "desc",
+      "solution": [
+        "MMR",
+        "HND",
+        "ZWE",
+        "SWZ",
+        "MLT"
+      ]
+    },
+    {
+      "id": "stat_2",
+      "label": "GDP (Total)",
+      "category": "economy",
+      "tooltip": "Gross domestic product at current prices in millions of US dollars. Source: World Bank, 2023.",
+      "direction": "desc",
+      "solution": [
+        "MMR",
+        "ZWE",
+        "HND",
+        "MLT",
+        "SWZ"
+      ]
+    },
+    {
+      "id": "stat_3",
+      "label": "Life Expectancy",
+      "category": "health",
+      "tooltip": "Average life expectancy at birth in years. Source: WHO, 2022.",
+      "direction": "desc",
+      "solution": [
+        "MLT",
+        "HND",
+        "MMR",
+        "ZWE",
+        "SWZ"
+      ]
+    }
+  ]
+}

@@ -1,11 +1,23 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, act } from '@testing-library/react';
 import { RankingList } from '../../src/components/game/RankingList';
 import type { Country } from '../../src/types';
+import type { DragEndEvent } from '@dnd-kit/core';
+
+let capturedOnDragEnd: ((e: DragEndEvent) => void) | null = null;
 
 // Mock dnd-kit
 vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DndContext: ({
+    children,
+    onDragEnd,
+  }: {
+    children: React.ReactNode;
+    onDragEnd?: (e: DragEndEvent) => void;
+  }) => {
+    capturedOnDragEnd = onDragEnd ?? null;
+    return <>{children}</>;
+  },
   closestCenter: vi.fn(),
   PointerSensor: vi.fn(),
   KeyboardSensor: vi.fn(),
@@ -47,6 +59,20 @@ const countries: Country[] = [
 
 const order = countries.map((c) => c.id);
 
+function makeDragEnd(activeId: string, overId: string | null): DragEndEvent {
+  return {
+    active: { id: activeId, rect: {} as never, data: {} as never },
+    over: overId ? { id: overId, rect: {} as never, data: {} as never, disabled: false } : null,
+    activatorEvent: {} as never,
+    collisions: null,
+    delta: { x: 0, y: 0 },
+  } as unknown as DragEndEvent;
+}
+
+beforeEach(() => {
+  capturedOnDragEnd = null;
+});
+
 describe('RankingList', () => {
   it('renders all 5 country cards', () => {
     render(<RankingList countries={countries} order={order} onReorder={vi.fn()} />);
@@ -69,5 +95,54 @@ describe('RankingList', () => {
   it('renders data-testid="ranking-list"', () => {
     render(<RankingList countries={countries} order={order} onReorder={vi.fn()} />);
     expect(screen.getByTestId('ranking-list')).toBeInTheDocument();
+  });
+
+  it('handleDragEnd calls onReorder when dragging one country over another', () => {
+    const onReorder = vi.fn();
+    render(<RankingList countries={countries} order={order} onReorder={onReorder} />);
+
+    act(() => {
+      capturedOnDragEnd!(makeDragEnd('NGA', 'BRA'));
+    });
+
+    expect(onReorder).toHaveBeenCalledOnce();
+    // NGA (index 0) and BRA (index 1) should be swapped
+    const result = onReorder.mock.calls[0][0] as string[];
+    expect(result[0]).toBe('BRA');
+    expect(result[1]).toBe('NGA');
+  });
+
+  it('handleDragEnd does nothing when dragging a country onto itself', () => {
+    const onReorder = vi.fn();
+    render(<RankingList countries={countries} order={order} onReorder={onReorder} />);
+
+    act(() => {
+      capturedOnDragEnd!(makeDragEnd('NGA', 'NGA'));
+    });
+
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it('handleDragEnd does nothing when over is null', () => {
+    const onReorder = vi.fn();
+    render(<RankingList countries={countries} order={order} onReorder={onReorder} />);
+
+    act(() => {
+      capturedOnDragEnd!(makeDragEnd('NGA', null));
+    });
+
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+
+  it('handleDragEnd does not reorder when lastBulls locks the source position', () => {
+    const onReorder = vi.fn();
+    const lastBulls = [true, false, false, false, false]; // NGA locked at position 0
+    render(<RankingList countries={countries} order={order} onReorder={onReorder} lastBulls={lastBulls} />);
+
+    act(() => {
+      capturedOnDragEnd!(makeDragEnd('NGA', 'BRA'));
+    });
+
+    expect(onReorder).not.toHaveBeenCalled();
   });
 });

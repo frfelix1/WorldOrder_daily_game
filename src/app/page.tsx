@@ -160,7 +160,6 @@ export default function GamePage() {
     setLockedSlots([...EMPTY_LOCKS]);
     setAnnouncement('');
     setRoundCompleteEffect(false);
-    setWrongGuessEffect(false);
     setDevDate(date === TODAY ? null : date);
   }, []);
 
@@ -556,7 +555,7 @@ export default function GamePage() {
         {activeSession && activeSession.guesses.length > 0 && (
           <div className="flex flex-col gap-2.5 animate-slide-up-fade" style={{ animationDelay: '160ms' }}>
             {activeSession.guesses.map((guess, i) => (
-              <FeedbackRow key={i} guess={guess} statIndex={activeStatIndex + 1} guessIndex={i + 1} />
+              <FeedbackRow key={i} guess={guess} countries={puzzle.countries} statIndex={activeStatIndex + 1} guessIndex={i + 1} />
             ))}
           </div>
         )}
