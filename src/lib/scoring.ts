@@ -1,28 +1,59 @@
-import type { Guess, StatSession } from '../types';
+import type { StatSession } from '../types';
+
+/** Maximum points awarded for a single round (stat) with zero wrong guesses. */
+export const ROUND_MAX = 33;
+
+/** Geometric decay rate applied per wrong guess. */
+export const DECAY_BASE = 0.65;
+
+/** Bonus added to the total when all three rounds achieve ROUND_MAX. */
+export const PERFECT_BONUS = 1;
+
+/** Maximum achievable total game score (3 × ROUND_MAX + PERFECT_BONUS). */
+export const GAME_MAX = 100;
 
 /**
- * Computes the score for a single stat given all guesses and the solution.
- * Linear formula: for each position, n = number of wrong guesses; score = max(10 - 2n, 0).
- * Maximum: 5 positions × 10 pts = 50 pts per stat.
+ * Computes the score for a single round given the number of wrong guesses.
+ *
+ * Formula: Math.max(0, Math.round(ROUND_MAX * DECAY_BASE ** wrongGuesses))
+ *
+ * @param wrongGuesses - Number of incorrect full-ranking attempts (≥ 0).
+ *                       Equals guesses.length - 1 for a solved round.
+ * @returns Integer in the range [0, 33].
  */
-export function scoreForStat(guesses: Guess[], solution: string[]): number {
-  let score = 0;
-  for (let pos = 0; pos < solution.length; pos++) {
-    const n = guesses.filter((g) => !g.bulls[pos]).length;
-    score += Math.max(10 - 2 * n, 0);
-  }
-  return score;
+export function scoreForRound(wrongGuesses: number): number {
+  return Math.max(0, Math.round(ROUND_MAX * Math.pow(DECAY_BASE, wrongGuesses)));
 }
 
 /**
- * Computes the total score across all three stats.
- * Maximum: 3 stats × 50 pts = 150 pts.
+ * Computes the score for a completed stat session.
+ *
+ * Delegates to scoreForRound using round-level wrong-guess count.
+ * The last guess in a solved session is always the correct one, so
+ * wrongGuesses = session.guesses.length - 1.
+ *
+ * @param session - A StatSession with at least one guess (the solving guess).
+ * @returns Integer in the range [0, 33].
  */
-export function totalScore(statSessions: StatSession[], solutions: string[][]): number {
-  return statSessions.reduce(
-    (sum, session, i) => sum + scoreForStat(session.guesses, solutions[i]),
-    0,
-  );
+export function scoreForStat(session: StatSession): number {
+  const wrongGuesses = Math.max(0, session.guesses.length - 1);
+  return scoreForRound(wrongGuesses);
+}
+
+/**
+ * Computes the total game score across all three stat sessions.
+ *
+ * Applies a 1-point perfect-game bonus when all three round scores equal ROUND_MAX,
+ * bringing the maximum from 99 to 100.
+ *
+ * @param statSessions - Exactly three StatSession objects (one per stat).
+ * @returns Integer in the range [0, 100].
+ */
+export function totalScore(statSessions: StatSession[]): number {
+  const roundScores = statSessions.map((s) => scoreForStat(s));
+  const sum = roundScores.reduce((acc, s) => acc + s, 0);
+  const bonus = roundScores.every((s) => s === ROUND_MAX) ? PERFECT_BONUS : 0;
+  return sum + bonus;
 }
 
 /**

@@ -76,12 +76,12 @@ test.describe('Full game flow', () => {
       }
     }
 
-    // Assert result screen appears with a score between 0 and 150
+    // Assert result screen appears with a score between 0 and 100
     await expect(page.locator('[data-testid="result-card"]')).toBeVisible({ timeout: 5000 });
     const scoreText = await page.locator('[data-testid="final-score"]').textContent();
     const score = parseInt(scoreText ?? '0');
     expect(score).toBeGreaterThanOrEqual(0);
-    expect(score).toBeLessThanOrEqual(150);
+    expect(score).toBeLessThanOrEqual(100);
   });
 });
 
@@ -101,8 +101,8 @@ test.describe('Daily rotation', () => {
         { statId: 'stat_2', solved: true, guesses: [{ order: ['AUS', 'BRA', 'DEU', 'NGA', 'JPN'], bulls: [true, true, true, true, true] }] },
         { statId: 'stat_3', solved: true, guesses: [{ order: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'], bulls: [true, true, true, true, true] }] },
       ],
-      runningScore: 150,
-      finalScore: 150,
+      runningScore: 100,
+      finalScore: 100,
       updatedAt: Date.now(),
     };
 

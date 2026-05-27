@@ -3,10 +3,10 @@ interface ScoreDisplayProps {
 }
 
 export function ScoreDisplay({ score }: ScoreDisplayProps) {
-  const pct = Math.min(100, Math.round((score / 150) * 100));
+  const pct = Math.min(100, Math.round((score / 100) * 100));
 
   return (
-    <div aria-label={`Running score: ${score} / 150`}>
+    <div aria-label={`Running score: ${score} / 100`}>
       <div
         style={{
           display: 'flex',
@@ -37,7 +37,7 @@ export function ScoreDisplay({ score }: ScoreDisplayProps) {
             backgroundClip: 'text',
           }}
         >
-          {score} / 150
+          {score} / 100
         </span>
       </div>
       {/* Progress track */}

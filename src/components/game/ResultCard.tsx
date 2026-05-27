@@ -24,10 +24,10 @@ const CONFETTI = Array.from({ length: 52 }, (_, i) => ({
 }));
 
 function performanceLabel(score: number): { label: string; color: string; medal: string; glow: string } {
-  if (score === 150) return { label: 'Perfect',         color: '#e8c547', medal: '🏆', glow: 'rgba(232,197,71,0.4)' };
-  if (score >= 120)  return { label: 'Excellent',       color: '#00c4e8', medal: '🥇', glow: 'rgba(0,196,232,0.35)' };
-  if (score >= 90)   return { label: 'Great',           color: '#00e896', medal: '🥈', glow: 'rgba(0,232,150,0.35)' };
-  if (score >= 60)   return { label: 'Good',            color: '#a3e635', medal: '🥉', glow: 'rgba(163,230,53,0.3)' };
+  if (score === 100)  return { label: 'Perfect',         color: '#e8c547', medal: '🏆', glow: 'rgba(232,197,71,0.4)' };
+  if (score >= 80)   return { label: 'Excellent',       color: '#00c4e8', medal: '🥇', glow: 'rgba(0,196,232,0.35)' };
+  if (score >= 60)   return { label: 'Great',           color: '#00e896', medal: '🥈', glow: 'rgba(0,232,150,0.35)' };
+  if (score >= 40)   return { label: 'Good',            color: '#a3e635', medal: '🥉', glow: 'rgba(163,230,53,0.3)' };
   return               { label: 'Keep Exploring',      color: '#7a90b0', medal: '💪', glow: 'rgba(122,144,176,0.25)' };
 }
 
@@ -100,7 +100,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
 
   const finalScore = state.finalScore ?? state.runningScore;
   const perf = performanceLabel(finalScore);
-  const pct = Math.round((finalScore / 150) * 100);
+  const pct = Math.round((finalScore / 100) * 100);
 
   // Count-up: start at finalScore (so tests see correct value immediately),
   // then animate from 0 after a short delay.
@@ -269,7 +269,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
                 letterSpacing: '0',
               }}
             >
-              / 150
+              / 100
             </span>
           </p>
 

@@ -74,8 +74,8 @@ export interface GameState {
   status: 'in_progress' | 'complete';
   activeStatIndex: number;           // 0 | 1 | 2
   stats: StatSession[];              // Length 3, one per stat in reveal order
-  runningScore: number;              // Live score, updated after each guess (0–150)
-  finalScore: number | null;         // Set when status becomes "complete"
+  runningScore: number;              // Live score, updated after each guess (0–100)
+  finalScore: number | null;         // Set when status becomes "complete" (0–100)
   updatedAt: number;                 // Unix ms timestamp of last write
 }
 

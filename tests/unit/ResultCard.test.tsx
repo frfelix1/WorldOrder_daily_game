@@ -31,8 +31,8 @@ const mockState: GameState = {
     { statId: 'stat_2', solved: true, guesses: [{ order: solution, bulls: [true, true, true, true, true] }] },
     { statId: 'stat_3', solved: true, guesses: [{ order: solution, bulls: [true, true, true, true, true] }] },
   ],
-  runningScore: 150,
-  finalScore: 150,
+  runningScore: 100,
+  finalScore: 100,
   updatedAt: Date.now(),
 };
 
@@ -46,7 +46,7 @@ beforeEach(() => {
 describe('ResultCard', () => {
   it('renders the final score', () => {
     render(<ResultCard state={mockState} puzzleNumber={42} puzzle={mockPuzzle} />);
-    expect(screen.getByTestId('final-score')).toHaveTextContent('150');
+    expect(screen.getByTestId('final-score')).toHaveTextContent('100');
   });
 
   it('renders one emoji row per guess per stat', () => {
@@ -114,23 +114,28 @@ describe('ResultCard — performanceLabel variants', () => {
     };
   }
 
-  it('shows Excellent label for score >= 120', () => {
-    render(<ResultCard state={makeState(130)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Perfect label for score === 100', () => {
+    render(<ResultCard state={makeState(100)} puzzleNumber={1} puzzle={mockPuzzle} />);
+    expect(screen.getByRole('img', { name: /perfect/i })).toBeInTheDocument();
+  });
+
+  it('shows Excellent label for score >= 80', () => {
+    render(<ResultCard state={makeState(85)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /excellent/i })).toBeInTheDocument();
   });
 
-  it('shows Great label for score >= 90', () => {
-    render(<ResultCard state={makeState(100)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Great label for score >= 60', () => {
+    render(<ResultCard state={makeState(65)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /great/i })).toBeInTheDocument();
   });
 
-  it('shows Good label for score >= 60', () => {
-    render(<ResultCard state={makeState(70)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Good label for score >= 40', () => {
+    render(<ResultCard state={makeState(45)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /good/i })).toBeInTheDocument();
   });
 
-  it('shows Keep Exploring label for score below 60', () => {
-    render(<ResultCard state={makeState(40)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Keep Exploring label for score below 40', () => {
+    render(<ResultCard state={makeState(30)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /keep exploring/i })).toBeInTheDocument();
   });
 });

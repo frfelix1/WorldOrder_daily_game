@@ -179,8 +179,7 @@ export default function GamePage() {
       return { ...s, solved: allBulls, guesses: [...s.guesses, newGuess] };
     });
 
-    const solutions = puzzle.stats.map((s) => s.solution);
-    const newRunningScore = totalScore(updatedStats, solutions);
+    const newRunningScore = totalScore(updatedStats);
 
     const isLastStat = statIndex === 2;
     const newActiveStatIndex = allBulls && !isLastStat ? statIndex + 1 : statIndex;
@@ -214,7 +213,7 @@ export default function GamePage() {
 
     if (allBulls) {
       if (isComplete) {
-        setAnnouncement(`Game complete! Your score is ${newRunningScore} out of 150 points.`);
+        setAnnouncement(`Game complete! Your score is ${newRunningScore} out of 100 points.`);
         setPageStatus('complete');
 
         const playerStats = loadPlayerStats();
