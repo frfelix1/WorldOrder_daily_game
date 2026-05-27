@@ -24,6 +24,12 @@ export interface RankingBoardProps {
   onSlotsChange: (assignments: (string | null)[]) => void;
   /** When true, disables all interaction (stat solved). */
   disabled?: boolean;
+  /**
+   * Pre-formatted value strings for each slot position (index 0–4).
+   * null means no value to display (slot unlocked, empty, or value unavailable).
+   * When provided, locked slots render the value alongside the country name.
+   */
+  slotValues?: (string | null)[];
 }
 
 // ── Draggable pool chip ───────────────────────────────────────────────────────
@@ -172,6 +178,7 @@ function SlotDropZone({
   country,
   isLocked,
   disabled,
+  slotValue,
   onEmptySlotClick,
   onRemoveFromSlot,
 }: {
@@ -180,6 +187,7 @@ function SlotDropZone({
   country: Country | null;
   isLocked: boolean;
   disabled: boolean;
+  slotValue?: string | null;
   onEmptySlotClick: () => void;
   onRemoveFromSlot: () => void;
 }) {
@@ -276,6 +284,19 @@ function SlotDropZone({
             >
               {country.name}
             </span>
+            {/* Revealed value */}
+            {slotValue != null && (
+              <span
+                style={{
+                  fontSize: '11px',
+                  color: 'rgba(0,232,150,0.7)',
+                  flexShrink: 0,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {slotValue}
+              </span>
+            )}
             {/* Checkmark */}
             <div
               className="flex-shrink-0 flex items-center justify-center rounded-full"
@@ -355,6 +376,7 @@ export function RankingBoard({
   lockedSlots,
   onSlotsChange,
   disabled = false,
+  slotValues,
 }: RankingBoardProps) {
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
 
@@ -470,6 +492,7 @@ export function RankingBoard({
               country={country}
               isLocked={lockedSlots[index]}
               disabled={disabled}
+              slotValue={slotValues?.[index] ?? null}
               onEmptySlotClick={() => handleEmptySlotClick(index)}
               onRemoveFromSlot={() => handleRemoveFromSlot(index)}
             />

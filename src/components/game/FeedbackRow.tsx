@@ -2,12 +2,17 @@ import type { Guess, Country } from '../../types';
 
 interface FeedbackRowProps {
   guess: Guess;
-  countries: Country[];  // NEW — full list of 5 countries for this puzzle
+  countries: Country[];  // full list of 5 countries for this puzzle
   statIndex?: number;    // kept for aria/test context
   guessIndex?: number;   // kept for aria/test context
+  /**
+   * Pre-formatted value strings keyed by country ID.
+   * When provided, correct positions in this row display the value under the country name.
+   */
+  valueMap?: Record<string, string>;
 }
 
-export function FeedbackRow({ guess, countries, statIndex = 1, guessIndex = 1 }: FeedbackRowProps) {
+export function FeedbackRow({ guess, countries, statIndex = 1, guessIndex = 1, valueMap }: FeedbackRowProps) {
   return (
     <div
       data-testid="feedback-row"
@@ -17,6 +22,7 @@ export function FeedbackRow({ guess, countries, statIndex = 1, guessIndex = 1 }:
       {guess.order.map((countryId, pos) => {
         const country = countries.find((c) => c.id === countryId) ?? null;
         const isCorrect = guess.bulls[pos];
+        const revealedValue = isCorrect && valueMap ? (valueMap[countryId] ?? null) : null;
 
         const borderColor = isCorrect
           ? 'rgba(0,232,150,0.35)'
@@ -86,6 +92,24 @@ export function FeedbackRow({ guess, countries, statIndex = 1, guessIndex = 1 }:
             >
               {country?.name ?? '?'}
             </span>
+
+            {/* Revealed value — shown on correct positions when valueMap provided */}
+            {revealedValue != null && (
+              <span
+                style={{
+                  fontSize: '9px',
+                  color: 'rgba(0,232,150,0.65)',
+                  textAlign: 'center',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '100%',
+                  lineHeight: 1.2,
+                }}
+              >
+                {revealedValue}
+              </span>
+            )}
           </div>
         );
       })}

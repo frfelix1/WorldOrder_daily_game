@@ -510,3 +510,98 @@ describe('RankingBoard — US3 PoolChipItem enlarged styling', () => {
     }
   });
 });
+
+// ── slotValues prop — feature 007-reveal-correct-values ──────────────────────
+
+describe('RankingBoard slotValues', () => {
+  const allInSlots: (string | null)[] = ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'];
+  const firstLocked: boolean[] = [true, false, false, false, false];
+  const allLocked: boolean[] = [true, true, true, true, true];
+
+  it('renders formatted value text on a locked slot when slotValues provides a string', () => {
+    const slotValues: (string | null)[] = ['218,541,212 people', null, null, null, null];
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={allInSlots}
+        lockedSlots={firstLocked}
+        slotValues={slotValues}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('218,541,212 people')).toBeInTheDocument();
+  });
+
+  it('does not render value text on unlocked slots even when slotValues has nulls', () => {
+    const slotValues: (string | null)[] = [null, null, null, null, null];
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={allInSlots}
+        lockedSlots={firstLocked}
+        slotValues={slotValues}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    // No value text should appear
+    expect(screen.queryByText(/people/)).not.toBeInTheDocument();
+  });
+
+  it('does not render value text when slotValues prop is omitted', () => {
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={allInSlots}
+        lockedSlots={firstLocked}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText(/people/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/km²/)).not.toBeInTheDocument();
+  });
+
+  it('renders values on all 5 locked slots when all slots are locked', () => {
+    const slotValues: (string | null)[] = [
+      '218,541,212 people',
+      '215,313,498 people',
+      '84,316,622 people',
+      '125,124,989 people',
+      '26,461,166 people',
+    ];
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={allInSlots}
+        lockedSlots={allLocked}
+        slotValues={slotValues}
+        disabled
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    for (const val of slotValues) {
+      expect(screen.getByText(val!)).toBeInTheDocument();
+    }
+  });
+
+  it('renders values on all 5 locked slots when disabled=true (solved stat)', () => {
+    const slotValues: (string | null)[] = [
+      '218,541,212 people',
+      '215,313,498 people',
+      '84,316,622 people',
+      '125,124,989 people',
+      '26,461,166 people',
+    ];
+    render(
+      <RankingBoard
+        countries={countries}
+        slotAssignments={allInSlots}
+        lockedSlots={allLocked}
+        slotValues={slotValues}
+        disabled={true}
+        onSlotsChange={vi.fn()}
+      />,
+    );
+    // Values must remain visible even when board is disabled
+    expect(screen.getAllByText(/people/)).toHaveLength(5);
+  });
+});

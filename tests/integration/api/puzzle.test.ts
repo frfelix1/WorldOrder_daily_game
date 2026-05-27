@@ -80,4 +80,43 @@ describe.skipIf(!RUN_INTEGRATION)('GET /api/puzzle', () => {
       expect(body1.stats[i].solution).toEqual(body2.stats[i].solution);
     }
   });
+
+  // ── StatDef unit + values fields (feature 007-reveal-correct-values) ────────
+
+  it('each stat in the response includes a non-empty unit string', async () => {
+    const res = await fetch(`${BASE_URL}/api/puzzle?date=2026-05-22`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    for (const stat of body.stats) {
+      expect(typeof stat.unit).toBe('string');
+      expect(stat.unit.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('each stat in the response includes a values object with exactly 5 country-ID keys', async () => {
+    const res = await fetch(`${BASE_URL}/api/puzzle?date=2026-05-22`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    const countryIds: string[] = body.countries.map((c: { id: string }) => c.id).sort();
+    for (const stat of body.stats) {
+      expect(typeof stat.values).toBe('object');
+      expect(stat.values).not.toBeNull();
+      const valueKeys = Object.keys(stat.values).sort();
+      expect(valueKeys).toHaveLength(5);
+      expect(valueKeys).toEqual(countryIds);
+    }
+  });
+
+  it('all values in stat.values are finite numbers', async () => {
+    const res = await fetch(`${BASE_URL}/api/puzzle?date=2026-05-22`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    for (const stat of body.stats) {
+      for (const val of Object.values(stat.values)) {
+        expect(typeof val).toBe('number');
+        expect(isFinite(val as number)).toBe(true);
+      }
+    }
+  });
 });
+

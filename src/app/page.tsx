@@ -5,6 +5,7 @@ import type { PuzzleFile, GameState, Guess, StatSession } from '../types';
 import { getPuzzleNumberForDate, getUTCDateString } from '../lib/puzzle';
 import { loadGameState, saveGameState, loadPlayerStats, savePlayerStats } from '../lib/game-state';
 import { totalScore } from '../lib/scoring';
+import { formatStatValue } from '../lib/formatting';
 import { ScoreDisplay } from '../components/game/ScoreDisplay';
 import { StatPanel } from '../components/game/StatPanel';
 import { RankingBoard } from '../components/game/RankingBoard';
@@ -51,6 +52,12 @@ export default function GamePage() {
   const [slotAssignments, setSlotAssignments] = useState<(string | null)[]>([...EMPTY_SLOTS]);
   const [lockedSlots, setLockedSlots] = useState<boolean[]>([...EMPTY_LOCKS]);
   const [announcement, setAnnouncement] = useState('');
+  /**
+   * Records which stat index the currently locked slots belong to.
+   * Needed because after solving a stat, activeStatIndex advances to the next
+   * stat while locked slots may still be visible during the 800ms animation.
+   */
+  const [lockedStatIndex, setLockedStatIndex] = useState<number>(0);
 
   // Dev seed override — only active in development
   const [devDate, setDevDate] = useState<string | null>(null);
@@ -126,6 +133,7 @@ export default function GamePage() {
           );
           setLockedSlots(locked);
           setSlotAssignments(restored);
+          setLockedStatIndex(lastStatIndex);
         } else {
           setSlotAssignments([...EMPTY_SLOTS]);
           setLockedSlots([...EMPTY_LOCKS]);
@@ -208,6 +216,10 @@ export default function GamePage() {
         newSlotAssignments[i] = null;
       }
     });
+    // Record which stat these locked slots belong to, so slotValues can be computed
+    // correctly even during the 800ms animation window after a stat is solved and
+    // activeStatIndex has already advanced to the next stat.
+    setLockedStatIndex(statIndex);
     setLockedSlots(newLockedSlots);
     setSlotAssignments(newSlotAssignments);
 
@@ -390,6 +402,30 @@ export default function GamePage() {
   const activeSession = gameState.stats[activeStatIndex];
   const allSlotsFilled = slotAssignments.every((s) => s !== null);
 
+  /**
+   * The stat whose values should appear on locked slots.
+   * Uses lockedStatIndex (not activeStatIndex) so that during the 800ms animation
+   * after solving a stat, the correct values remain visible even though
+   * activeStatIndex has already advanced to the next stat.
+   */
+  const statForLockedValues = puzzle.stats[lockedStatIndex] ?? null;
+
+  /** Pre-formatted value strings for each slot position; null if slot is unlocked or has no value. */
+  const slotValues: (string | null)[] = slotAssignments.map((countryId, i) => {
+    if (!lockedSlots[i] || !countryId || !statForLockedValues) return null;
+    const rawValue = statForLockedValues.values?.[countryId];
+    if (rawValue == null || !statForLockedValues.unit) return null;
+    return formatStatValue(rawValue, statForLockedValues.unit);
+  });
+
+  /** Pre-formatted value map for all 5 countries in the active stat (used by FeedbackRow). */
+  const activeValueMap: Record<string, string> = (() => {
+    const v = activeStat?.values;
+    const u = activeStat?.unit;
+    if (!v || !u) return {};
+    return Object.fromEntries(puzzle.countries.map((c) => [c.id, formatStatValue(v[c.id] ?? 0, u)]));
+  })();
+
   return (
     <main className="flex flex-col items-center min-h-screen">
       {/* Animated aurora blobs */}
@@ -554,7 +590,7 @@ export default function GamePage() {
         {activeSession && activeSession.guesses.length > 0 && (
           <div className="flex flex-col gap-2.5 animate-slide-up-fade" style={{ animationDelay: '160ms' }}>
             {activeSession.guesses.map((guess, i) => (
-              <FeedbackRow key={i} guess={guess} countries={puzzle.countries} statIndex={activeStatIndex + 1} guessIndex={i + 1} />
+              <FeedbackRow key={i} guess={guess} countries={puzzle.countries} statIndex={activeStatIndex + 1} guessIndex={i + 1} valueMap={activeValueMap} />
             ))}
           </div>
         )}
@@ -570,6 +606,7 @@ export default function GamePage() {
             lockedSlots={lockedSlots}
             onSlotsChange={setSlotAssignments}
             disabled={activeSession?.solved ?? false}
+            slotValues={slotValues}
           />
         </div>
 

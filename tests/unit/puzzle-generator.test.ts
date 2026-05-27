@@ -276,6 +276,52 @@ describe('generatePuzzle', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // StatDef unit + values fields (feature 007-reveal-correct-values)
+  // ---------------------------------------------------------------------------
+
+  it('each stat has a non-empty unit string', () => {
+    const result = generatePuzzle('2026-06-01', dataset)!;
+    for (const stat of result.stats) {
+      expect(typeof stat.unit).toBe('string');
+      expect(stat.unit!.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('each stat has a values record with exactly 5 entries', () => {
+    const result = generatePuzzle('2026-06-01', dataset)!;
+    for (const stat of result.stats) {
+      expect(typeof stat.values).toBe('object');
+      expect(Object.keys(stat.values!)).toHaveLength(5);
+    }
+  });
+
+  it('values keys match the puzzle country IDs', () => {
+    const result = generatePuzzle('2026-06-01', dataset)!;
+    const countryIds = result.countries.map((c) => c.id).sort();
+    for (const stat of result.stats) {
+      expect(Object.keys(stat.values!).sort()).toEqual(countryIds);
+    }
+  });
+
+  it('all values in stat.values are finite numbers', () => {
+    const result = generatePuzzle('2026-06-01', dataset)!;
+    for (const stat of result.stats) {
+      for (const val of Object.values(stat.values!)) {
+        expect(typeof val).toBe('number');
+        expect(isFinite(val)).toBe(true);
+      }
+    }
+  });
+
+  it('stat.unit matches the unit from the source DatasetStat', () => {
+    // The test dataset uses unit: 'units' for all stats
+    const result = generatePuzzle('2026-06-01', dataset)!;
+    for (const stat of result.stats) {
+      expect(stat.unit).toBe('units');
+    }
+  });
+
+  // ---------------------------------------------------------------------------
   // Dataset validation
   // ---------------------------------------------------------------------------
 

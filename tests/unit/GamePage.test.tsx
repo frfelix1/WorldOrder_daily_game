@@ -61,9 +61,9 @@ const mockPuzzle: PuzzleFile = {
     { id: 'AUS', name: 'Australia', flagCode: 'au' },
   ],
   stats: [
-    { id: 'stat_1', label: 'Population', category: 'demographics', tooltip: 'Population tooltip', direction: 'desc', solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
-    { id: 'stat_2', label: 'Land Area',  category: 'geography',    tooltip: 'Land area tooltip',  direction: 'desc', solution: ['AUS', 'BRA', 'DEU', 'NGA', 'JPN'] },
-    { id: 'stat_3', label: 'Urban %',    category: 'demographics', tooltip: 'Urban tooltip',      direction: 'desc', solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'] },
+    { id: 'stat_1', label: 'Population', category: 'demographics', tooltip: 'Population tooltip', direction: 'desc', solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'], unit: 'people', values: { NGA: 218541212, BRA: 215313498, DEU: 84316622, JPN: 125124989, AUS: 26461166 } },
+    { id: 'stat_2', label: 'Land Area',  category: 'geography',    tooltip: 'Land area tooltip',  direction: 'desc', solution: ['AUS', 'BRA', 'DEU', 'NGA', 'JPN'], unit: 'km²',   values: { NGA: 923768, BRA: 8515767, DEU: 357114, JPN: 377975, AUS: 7692024 } },
+    { id: 'stat_3', label: 'Urban %',    category: 'demographics', tooltip: 'Urban tooltip',      direction: 'desc', solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'], unit: '%',     values: { NGA: 54.3, BRA: 87.6, DEU: 77.5, JPN: 91.8, AUS: 86.2 } },
   ],
 };
 
@@ -508,6 +508,154 @@ describe('GamePage — slot restoration and correct guess paths (coverage)', () 
     // Game complete — result card appears
     await waitFor(() => {
       expect(screen.getByTestId('result-card')).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+});
+
+// ── valueMap in FeedbackRow (feature 007-reveal-correct-values, US3) ──────────
+
+describe('GamePage — valueMap passed to FeedbackRow after a partially correct guess', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('shows a value string in a feedback row for a correct position after a wrong guess', async () => {
+    // Puzzle where stat_1 solution is ['AUS', 'BRA', 'DEU', 'JPN', 'NGA']
+    // but clicking chips places NGA first → position 0 is incorrect, AUS is at position 4 (incorrect).
+    // We use a reversed solution so the first chip click (NGA) is wrong but position 4 (AUS) might be correct.
+    // Simpler: use solution where DEU at position 2 is always placed there (click order: NGA,BRA,DEU → DEU=pos2)
+    const partialPuzzle = {
+      ...mockPuzzle,
+      stats: [
+        {
+          ...mockPuzzle.stats[0],
+          // Correct solution has DEU at position 2 (matches click order NGA,BRA,DEU,JPN,AUS)
+          solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'],
+          unit: 'km²',
+          values: { NGA: 923768, BRA: 8515767, DEU: 357114, JPN: 377975, AUS: 7692024 },
+        },
+        ...mockPuzzle.stats.slice(1),
+      ],
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(partialPuzzle),
+    }));
+
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
+
+    // Click all 5 chips to fill slots: NGA, BRA, DEU, JPN, AUS (order of chips)
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
+    }
+
+    // Submit — DEU is at position 2 in both our order and the solution → it's correct
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('submit-btn'));
+
+    // DEU's value should appear at least once in the DOM (in a locked slot and/or a feedback row cell)
+    await waitFor(() => {
+      expect(screen.getAllByText('357,114 km²').length).toBeGreaterThanOrEqual(1);
+    }, { timeout: 3000 });
+  });
+});
+
+// ── slotValues prop passed to RankingBoard (feature 007-reveal-correct-values) ─
+
+describe('GamePage — slotValues passed to RankingBoard after correct guess', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('shows formatted stat value text in DOM after a correct guess locks a slot', async () => {
+    // Use a puzzle where stat_1 solution matches click order: NGA, BRA, DEU, JPN, AUS
+    const easyPuzzle = {
+      ...mockPuzzle,
+      stats: [
+        {
+          ...mockPuzzle.stats[0],
+          solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'],
+          unit: 'people',
+          values: { NGA: 218541212, BRA: 215313498, DEU: 84316622, JPN: 125124989, AUS: 26461166 },
+        },
+        ...mockPuzzle.stats.slice(1),
+      ],
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(easyPuzzle),
+    }));
+
+    render(<GamePage />);
+
+    // Wait for pool chips to appear
+    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
+
+    // Click all 5 chips to fill slots in order (NGA, BRA, DEU, JPN, AUS)
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
+    }
+
+    // Submit — all 5 slots should lock (correct answer)
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('submit-btn'));
+
+    // After the correct submit, locked slots should display formatted values
+    await waitFor(() => {
+      // Nigeria's population value should be visible somewhere in the DOM
+      expect(screen.getByText('218,541,212 people')).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('does not show value text before any guess is submitted', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockPuzzle),
+    }));
+
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
+
+    // No guesses yet — no value text should appear
+    expect(screen.queryByText(/218,541,212/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/people/)).not.toBeInTheDocument();
+  });
+
+  it('shows formatted value on locked slot after solving stat, and values persist when stat is solved', async () => {
+    // Use all the same solution for all stats to easily solve stat_1
+    const easyPuzzle = {
+      ...mockPuzzle,
+      stats: [
+        {
+          ...mockPuzzle.stats[0],
+          solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'],
+          unit: 'people',
+          values: { NGA: 218541212, BRA: 215313498, DEU: 84316622, JPN: 125124989, AUS: 26461166 },
+        },
+        ...mockPuzzle.stats.slice(1),
+      ],
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(easyPuzzle),
+    }));
+
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
+
+    // Place all 5 chips
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
+    }
+
+    // Submit correct answer — stat_1 is solved
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('submit-btn'));
+
+    // All 5 values should be visible after solve (stat solved = all locked + disabled)
+    await waitFor(() => {
+      expect(screen.getByText('218,541,212 people')).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 });

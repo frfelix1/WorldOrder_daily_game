@@ -256,6 +256,10 @@ function _tryGenerateCandidate(
         tooltip: stat.tooltip,
         direction: stat.direction,
         solution: deriveSolution(selectedIds, entriesById),
+        unit: stat.unit,
+        values: Object.fromEntries(
+          selectedIds.map((id) => [id, entriesById.get(id)!.value]),
+        ),
       };
     },
   );

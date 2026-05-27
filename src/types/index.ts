@@ -47,6 +47,18 @@ export interface StatDef {
   tooltip: string;      // Plain-language explanation
   direction: 'asc' | 'desc';
   solution: string[];   // Ordered array of Country IDs, position 0 = rank 1
+  /**
+   * Unit of measurement, e.g. "km²", "million USD", "%". Sourced from DatasetStat.unit.
+   * Optional for backwards-compatibility with puzzles generated before feature 007.
+   */
+  unit?: string;
+  /**
+   * Per-country raw values for the 5 selected countries.
+   * Keys are ISO alpha-3 country IDs matching PuzzleFile.countries[*].id.
+   * Values are the raw numeric measurement from DatasetEntry.value.
+   * Optional for backwards-compatibility with puzzles generated before feature 007.
+   */
+  values?: Record<string, number>;
 }
 
 export interface PuzzleFile {

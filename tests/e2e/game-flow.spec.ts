@@ -136,6 +136,59 @@ test.describe('US3 — Zero-maintenance dynamic generation', () => {
   });
 });
 
+test.describe('007 — Reveal correct values', () => {
+  test('locked ranking slots display a value string after a correct solve', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+
+    // Fill all slots by clicking chips
+    while ((await page.locator('[data-testid="pool-chip"]').count()) > 0) {
+      await page.locator('[data-testid="pool-chip"]').first().click();
+      await page.waitForTimeout(30);
+    }
+
+    // Keep submitting until the stat advances (at least one correct solve)
+    let statSolved = false;
+    for (let attempt = 0; attempt < 25 && !statSolved; attempt++) {
+      const submitBtn = page.locator('[data-testid="submit-btn"]');
+      if (!(await submitBtn.isVisible())) { statSolved = true; break; }
+      await expect(submitBtn).toBeEnabled({ timeout: 2000 });
+      await submitBtn.click();
+
+      // Stat solved when board transitions — submit button disappears briefly then new stat loads
+      // OR result-card shows (last stat)
+      if (await page.locator('[data-testid="result-card"]').isVisible()) { statSolved = true; break; }
+
+      const statPanel = page.locator('[data-testid="stat-panel"]');
+      const idx = await statPanel.getAttribute('data-stat-index');
+      if (idx && parseInt(idx) > 0) { statSolved = true; break; }
+
+      // Re-fill empty slots for next attempt
+      while ((await page.locator('[data-testid="pool-chip"]').count()) > 0) {
+        await page.locator('[data-testid="pool-chip"]').first().click();
+        await page.waitForTimeout(30);
+      }
+      await page.waitForTimeout(100);
+    }
+
+    // After a correct solve, locked slots (data-testid="ranking-slot") should show a value.
+    // We check that at least one locked slot contains a non-empty text node with a digit.
+    const lockedSlots = page.locator('[data-testid="ranking-slot"]');
+    const count = await lockedSlots.count();
+    expect(count).toBe(5);
+
+    let valueFound = false;
+    for (let i = 0; i < count; i++) {
+      const text = await lockedSlots.nth(i).textContent();
+      if (text && /\d/.test(text)) {
+        valueFound = true;
+        break;
+      }
+    }
+    expect(valueFound).toBe(true);
+  });
+});
+
 test.describe('US3 — Pool chip size', () => {
   test('each pool chip bounding box height is >= 44px', async ({ page }) => {
     await page.goto('/');

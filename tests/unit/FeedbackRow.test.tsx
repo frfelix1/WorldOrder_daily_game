@@ -100,3 +100,51 @@ describe('FeedbackRow — country display (new contract)', () => {
     expect(screen.queryByText('🟥')).not.toBeInTheDocument();
   });
 });
+
+// ── valueMap prop — feature 007-reveal-correct-values ─────────────────────────
+
+describe('FeedbackRow valueMap', () => {
+  const valueMap: Record<string, string> = {
+    NGA: '218,541,212 people',
+    BRA: '215,313,498 people',
+    DEU: '84,316,622 people',
+    JPN: '125,124,989 people',
+    AUS: '26,461,166 people',
+  };
+
+  it('renders the formatted value for a correct position when valueMap is provided', () => {
+    render(<FeedbackRow guess={allBullsGuess} countries={testCountries} valueMap={valueMap} />);
+    // NGA (Nigeria) is at position 1 and is correct — should show its value
+    expect(screen.getByText('218,541,212 people')).toBeInTheDocument();
+  });
+
+  it('renders values for all correct cells when all positions are correct', () => {
+    render(<FeedbackRow guess={allBullsGuess} countries={testCountries} valueMap={valueMap} />);
+    expect(screen.getByText('218,541,212 people')).toBeInTheDocument();
+    expect(screen.getByText('215,313,498 people')).toBeInTheDocument();
+    expect(screen.getByText('84,316,622 people')).toBeInTheDocument();
+    expect(screen.getByText('125,124,989 people')).toBeInTheDocument();
+    expect(screen.getByText('26,461,166 people')).toBeInTheDocument();
+  });
+
+  it('does not render values for incorrect positions even when valueMap is provided', () => {
+    // mixedGuess: positions 0, 1 are incorrect; positions 2, 3, 4 are correct
+    render(<FeedbackRow guess={mixedGuess} countries={testCountries} valueMap={valueMap} />);
+    // BRA is at position 0 (incorrect) — should NOT show its value
+    expect(screen.queryByText('215,313,498 people')).not.toBeInTheDocument();
+    // NGA is at position 1 (incorrect) — should NOT show its value
+    expect(screen.queryByText('218,541,212 people')).not.toBeInTheDocument();
+    // DEU is at position 2 (correct) — SHOULD show its value
+    expect(screen.getByText('84,316,622 people')).toBeInTheDocument();
+  });
+
+  it('does not render any value text when valueMap is omitted', () => {
+    render(<FeedbackRow guess={allBullsGuess} countries={testCountries} />);
+    expect(screen.queryByText(/people/)).not.toBeInTheDocument();
+  });
+
+  it('does not render any value text when valueMap is empty', () => {
+    render(<FeedbackRow guess={allBullsGuess} countries={testCountries} valueMap={{}} />);
+    expect(screen.queryByText(/people/)).not.toBeInTheDocument();
+  });
+});
