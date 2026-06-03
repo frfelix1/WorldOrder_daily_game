@@ -27,15 +27,27 @@ const getDataset = unstable_cache(
 /**
  * Generate and cache a puzzle for a specific date.
  * Keyed by date string — each date gets its own persistent cache entry.
+ *
+ * The cached function is created once per date and stored in a module-level map
+ * so that unstable_cache is called at a stable call site (not inside a request
+ * handler), which is the recommended usage pattern.
  */
-const getCachedPuzzle = (date: string): Promise<PuzzleFile | null> =>
-  unstable_cache(
-    async (): Promise<PuzzleFile | null> => {
-      const dataset = await getDataset();
-      return generatePuzzle(date, dataset);
-    },
-    [`puzzle-${date}`],
-  )();
+const _puzzleCacheFnMap = new Map<string, () => Promise<PuzzleFile | null>>();
+
+function getCachedPuzzle(date: string): Promise<PuzzleFile | null> {
+  let cacheFn = _puzzleCacheFnMap.get(date);
+  if (!cacheFn) {
+    cacheFn = unstable_cache(
+      async (): Promise<PuzzleFile | null> => {
+        const dataset = await getDataset();
+        return generatePuzzle(date, dataset);
+      },
+      [`puzzle-${date}`],
+    );
+    _puzzleCacheFnMap.set(date, cacheFn);
+  }
+  return cacheFn();
+}
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const date = req.nextUrl.searchParams.get('date');

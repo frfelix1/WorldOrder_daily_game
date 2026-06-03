@@ -9,8 +9,8 @@
  *   The same dateStr and dataset always produce the same PuzzleFile.
  */
 
-import { createRng, pickRandom, shuffle } from './seeded-random';
-import { getPuzzleNumberForDate } from './puzzle';
+import { createRng, pickRandom, shuffle } from "./seeded-random";
+import { getPuzzleNumberForDate } from "./puzzle";
 import type {
   Dataset,
   DatasetEntry,
@@ -18,11 +18,11 @@ import type {
   PuzzleFile,
   Country,
   StatDef,
-} from '../types';
-import type { RngState } from './seeded-random';
+} from "../types";
+import type { RngState } from "./seeded-random";
 
 /** Base seed added to the puzzle number to produce per-day seeds. */
-export const BASE_SEED = 42;
+export const BASE_SEED = 420;
 
 /** Maximum generation attempts per date before returning null. */
 export const MAX_ATTEMPTS = 20;
@@ -86,7 +86,13 @@ export function generatePuzzle(
  */
 export function computeQuintileBands(
   entries: DatasetEntry[],
-): [DatasetEntry[], DatasetEntry[], DatasetEntry[], DatasetEntry[], DatasetEntry[]] {
+): [
+  DatasetEntry[],
+  DatasetEntry[],
+  DatasetEntry[],
+  DatasetEntry[],
+  DatasetEntry[],
+] {
   const zeroEntries = entries.filter((e) => e.zeroValue);
   const nonZero = entries.filter((e) => !e.zeroValue);
   const N = nonZero.length;
@@ -105,7 +111,10 @@ export function computeQuintileBands(
       const prevEnd = bands.slice(0, b).reduce((s, a) => s + a.length, 0);
       const start = Math.max(Math.floor(N * cuts[b]), prevEnd);
       const end = b === 3 ? N : Math.floor(N * cuts[b + 1]);
-      bands[b] = nonZero.slice(start, Math.max(end, start + 1 > N ? start : start + 1));
+      bands[b] = nonZero.slice(
+        start,
+        Math.max(end, start + 1 > N ? start : start + 1),
+      );
     }
     // Trim band 3 to end exactly at N
     const usedByBands03 = bands.slice(0, 4).reduce((s, a) => s + a.length, 0);
@@ -129,7 +138,13 @@ export function computeQuintileBands(
     }
   }
 
-  return bands as [DatasetEntry[], DatasetEntry[], DatasetEntry[], DatasetEntry[], DatasetEntry[]];
+  return bands as [
+    DatasetEntry[],
+    DatasetEntry[],
+    DatasetEntry[],
+    DatasetEntry[],
+    DatasetEntry[],
+  ];
 }
 
 /**
@@ -211,8 +226,12 @@ function _tryGenerateCandidate(
   if (bands.some((b) => b.length === 0)) return null;
 
   // Build intersection of eligible country IDs across all 3 stats
-  const eligible2 = new Set(_usableEntries(dataset.stats[secondId]).map((e) => e.id));
-  const eligible3 = new Set(_usableEntries(dataset.stats[thirdId]).map((e) => e.id));
+  const eligible2 = new Set(
+    _usableEntries(dataset.stats[secondId]).map((e) => e.id),
+  );
+  const eligible3 = new Set(
+    _usableEntries(dataset.stats[thirdId]).map((e) => e.id),
+  );
 
   const selected: DatasetEntry[] = [];
   const usedIds = new Set<string>();
@@ -235,7 +254,9 @@ function _tryGenerateCandidate(
   const selectedIds = selected.map((e) => e.id);
 
   // Validate all constraints
-  if (!_validateCandidate(selectedIds, [primaryId, secondId, thirdId], dataset)) {
+  if (
+    !_validateCandidate(selectedIds, [primaryId, secondId, thirdId], dataset)
+  ) {
     return null;
   }
 

@@ -20,7 +20,7 @@ const EMPTY_SLOTS: (string | null)[] = [null, null, null, null, null];
 const EMPTY_LOCKS: boolean[] = [false, false, false, false, false];
 
 const IS_DEV = process.env.NODE_ENV === 'development';
-const TODAY = getUTCDateString();
+const MS_PER_DAY = 86_400_000;
 
 function buildInitialSessions(puzzle: PuzzleFile): StatSession[] {
   return puzzle.stats.map((stat) => ({
@@ -52,6 +52,20 @@ export default function GamePage() {
   const [slotAssignments, setSlotAssignments] = useState<(string | null)[]>([...EMPTY_SLOTS]);
   const [lockedSlots, setLockedSlots] = useState<boolean[]>([...EMPTY_LOCKS]);
   const [announcement, setAnnouncement] = useState('');
+
+  // Computed once per session at mount; refreshes automatically at UTC midnight
+  // so a tab left open overnight will get the new puzzle without a manual reload.
+  const [today, setToday] = useState(() => getUTCDateString());
+  useEffect(() => {
+    const msUntilMidnight = () => {
+      const now = Date.now();
+      return (Math.floor(now / MS_PER_DAY) + 1) * MS_PER_DAY - now;
+    };
+    const id = setTimeout(() => setToday(getUTCDateString()), msUntilMidnight());
+    return () => clearTimeout(id);
+  // Re-schedules the timer after each rollover so it fires again the next midnight.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [today]);
   /**
    * Records which stat index the currently locked slots belong to.
    * Needed because after solving a stat, activeStatIndex advances to the next
@@ -61,7 +75,7 @@ export default function GamePage() {
 
   // Dev seed override — only active in development
   const [devDate, setDevDate] = useState<string | null>(null);
-  const effectiveDate = (IS_DEV && devDate) ? devDate : TODAY;
+  const effectiveDate = (IS_DEV && devDate) ? devDate : today;
   const puzzleNumber = getPuzzleNumberForDate(effectiveDate);
 
   // Visual effects
@@ -197,7 +211,7 @@ export default function GamePage() {
     setLockedSlots([...EMPTY_LOCKS]);
     setAnnouncement('');
     setRoundCompleteEffect(false);
-    setDevDate(date === TODAY ? null : date);
+    setDevDate(date === today ? null : date);
   }, []);
 
   function handleSubmit() {
@@ -348,7 +362,7 @@ export default function GamePage() {
         {IS_DEV && (
           <DevPanel
             currentDate={effectiveDate}
-            todayDate={TODAY}
+            todayDate={today}
             onDateChange={handleDevDateChange}
           />
         )}
@@ -402,7 +416,7 @@ export default function GamePage() {
         {IS_DEV && (
           <DevPanel
             currentDate={effectiveDate}
-            todayDate={TODAY}
+            todayDate={today}
             onDateChange={handleDevDateChange}
           />
         )}
@@ -419,7 +433,7 @@ export default function GamePage() {
         {IS_DEV && (
           <DevPanel
             currentDate={effectiveDate}
-            todayDate={TODAY}
+            todayDate={today}
             onDateChange={handleDevDateChange}
           />
         )}
@@ -703,7 +717,7 @@ export default function GamePage() {
       {IS_DEV && (
         <DevPanel
           currentDate={effectiveDate}
-          todayDate={TODAY}
+          todayDate={today}
           onDateChange={handleDevDateChange}
         />
       )}
