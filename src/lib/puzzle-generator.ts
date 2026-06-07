@@ -5,7 +5,7 @@
  * no I/O, no side effects. (Constitution Principle IV)
  *
  * Determinism guarantee:
- *   seed = BASE_SEED + getPuzzleNumberForDate(dateStr) + attemptIndex
+ *   seed = BASE_SEED + (getPuzzleNumberForDate(dateStr) * MAX_ATTEMPTS) + attemptIndex
  *   The same dateStr and dataset always produce the same PuzzleFile.
  */
 
@@ -44,13 +44,23 @@ export function generatePuzzle(
 ): PuzzleFile | null {
   if (!_validateDataset(dataset)) return null;
 
+  return _generatePuzzle(dateStr, dataset, new Map());
+}
+
+function _generatePuzzle(
+  dateStr: string,
+  dataset: Dataset,
+  cache: Map<string, PuzzleFile | null>,
+): PuzzleFile | null {
+  const cached = cache.get(dateStr);
+  if (cached !== undefined) return cached;
+
   const puzzleNumber = getPuzzleNumberForDate(dateStr);
 
-  // Compute the previous day's country set once (no recursive consecutive check)
-  const prevIds = _getPreviousDayCountryIds(dateStr, dataset, puzzleNumber);
+  const prevIds = _getPreviousDayCountryIds(dateStr, dataset, puzzleNumber, cache);
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const seed = BASE_SEED + puzzleNumber + attempt;
+    const seed = _deriveSeed(puzzleNumber, attempt);
     const rng = createRng(seed);
     const candidate = _tryGenerateCandidate(dateStr, dataset, rng);
     if (candidate === null) continue;
@@ -66,9 +76,11 @@ export function generatePuzzle(
       }
     }
 
+    cache.set(dateStr, candidate);
     return candidate;
   }
 
+  cache.set(dateStr, null);
   return null;
 }
 
@@ -171,29 +183,25 @@ function _validateDataset(dataset: Dataset): boolean {
 }
 
 /**
- * Generate the previous day's country set WITHOUT the consecutive check,
- * to avoid infinite recursion.
+ * Generate the previous day's actual puzzle result so the consecutive-day check
+ * compares against the same country set users were shown.
  * Returns null if the previous day is before epoch or no puzzle can be made.
  */
 function _getPreviousDayCountryIds(
   dateStr: string,
   dataset: Dataset,
   puzzleNumber: number,
+  cache: Map<string, PuzzleFile | null>,
 ): Set<string> | null {
   if (puzzleNumber <= 0) return null;
 
   const prevDate = _offsetDate(dateStr, -1);
-  const prevPuzzleNumber = puzzleNumber - 1;
+  const prev = _generatePuzzle(prevDate, dataset, cache);
+  return prev ? new Set(prev.countries.map((c) => c.id)) : null;
+}
 
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const seed = BASE_SEED + prevPuzzleNumber + attempt;
-    const rng = createRng(seed);
-    const prev = _tryGenerateCandidate(prevDate, dataset, rng);
-    if (prev !== null) {
-      return new Set(prev.countries.map((c) => c.id));
-    }
-  }
-  return null;
+function _deriveSeed(puzzleNumber: number, attempt: number): number {
+  return BASE_SEED + (puzzleNumber * MAX_ATTEMPTS) + attempt;
 }
 
 /**
