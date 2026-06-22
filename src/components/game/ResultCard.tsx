@@ -187,7 +187,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
         className="animate-slide-up-fade"
         style={{
           width: '100%',
-          maxWidth: '400px',
+          maxWidth: 'var(--board-max)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -212,9 +212,13 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
           style={{
             fontFamily: 'var(--font-cinzel)',
             fontWeight: 900,
-            fontSize: '2rem',
+            fontSize: 'var(--fs-brand)',
             letterSpacing: '0.3em',
             marginBottom: '28px',
+            maxWidth: '100%',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}
         >
           WorldOrder
@@ -241,7 +245,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
           <p
             data-testid="final-score"
             style={{
-              fontSize: '5rem',
+              fontSize: 'var(--fs-score-final)',
               fontWeight: 800,
               lineHeight: 1,
               tabularNums: true,
@@ -380,6 +384,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
             animationDelay: '450ms',
             width: '100%',
             padding: '16px',
+            minHeight: 'var(--touch-min)',
             fontWeight: 700,
             borderRadius: '14px',
             fontSize: '13px',

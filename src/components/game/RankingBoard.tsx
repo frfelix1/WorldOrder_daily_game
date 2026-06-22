@@ -5,6 +5,7 @@ import {
   DragOverlay,
   PointerSensor,
   KeyboardSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   useDroppable,
@@ -54,7 +55,11 @@ function PoolChipItem({
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
-        padding: '12px 20px',
+        paddingTop: 'var(--chip-pad-y)',
+        paddingBottom: 'var(--chip-pad-y)',
+        paddingLeft: 'var(--chip-pad-x)',
+        paddingRight: 'var(--chip-pad-x)',
+        minHeight: 'var(--touch-min)',
         borderRadius: '24px',
         border: isDragging
           ? '1px solid rgba(232,197,71,0.5)'
@@ -70,6 +75,7 @@ function PoolChipItem({
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
         transform: isDragging ? 'scale(0.95)' : 'scale(1)',
+        touchAction: 'none',
       }}
       {...attributes}
       {...listeners}
@@ -117,6 +123,7 @@ function SlotDraggableContent({
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
+        touchAction: 'none',
       }}
       {...attributes}
       {...listeners}
@@ -228,7 +235,11 @@ function SlotDropZone({
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        padding: '12px 16px',
+        paddingTop: 'var(--slot-pad-y)',
+        paddingBottom: 'var(--slot-pad-y)',
+        paddingLeft: 'var(--slot-pad-x)',
+        paddingRight: 'var(--slot-pad-x)',
+        minHeight: 'var(--touch-min)',
         borderRadius: '14px',
         border: `1px solid ${borderColor}`,
         borderStyle: !country && !isLocked && !isOver ? 'dashed' : 'solid',
@@ -244,7 +255,7 @@ function SlotDropZone({
         style={{
           fontSize: '13px',
           fontWeight: 700,
-          width: '20px',
+          width: 'var(--rank-col-w)',
           textAlign: 'center',
           flexShrink: 0,
           fontFamily: 'var(--font-cinzel)',
@@ -382,6 +393,7 @@ export function RankingBoard({
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
     useSensor(KeyboardSensor),
   );
 

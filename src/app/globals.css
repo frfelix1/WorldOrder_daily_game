@@ -1,7 +1,41 @@
 @import "tailwindcss";
 @import 'flag-icons/css/flag-icons.min.css';
 
+/* ===== RESPONSIVE DESIGN TOKENS ===== */
+
 :root {
+  /* Breakpoints (reference only — used via @media overrides below) */
+  --bp-sm: 640px;
+  --bp-lg: 1024px;
+
+  /* Spacing */
+  --space-page:     clamp(12px, 4vw, 24px);
+  --space-page-top: clamp(16px, 4vw, 24px);
+  --gap-section:    clamp(16px, 4vw, 20px);
+
+  /* Typography */
+  --fs-brand:        clamp(1.75rem, 7vw, 2.25rem);
+  --fs-score:        clamp(13px, 3.5vw, 15px);
+  --fs-score-final:  clamp(3rem, 14vw, 5rem);
+  --fs-stat-title:   clamp(16px, 4.5vw, 18px);
+  --fs-body:         clamp(13px, 3.5vw, 14px);
+  --fs-label:        clamp(10px, 2.6vw, 11px);
+  --fs-micro:        clamp(10px, 2.6vw, 12px);
+
+  /* Component dimensions */
+  --board-max:    min(100%, 28rem);
+  --chip-pad-y:   clamp(10px, 2.8vw, 12px);
+  --chip-pad-x:   clamp(14px, 4vw, 20px);
+  --slot-pad-y:   clamp(10px, 2.8vw, 12px);
+  --slot-pad-x:   clamp(12px, 3.5vw, 16px);
+  --rank-col-w:   clamp(20px, 6vw, 24px);
+  --touch-min:    44px;
+
+  /* Effects — viewport-constrained so they never cause overflow */
+  --blob-size:    min(70vw, 520px);
+  --overlay-ring: min(120vw, 700px);
+  --solved-fs:    clamp(1.75rem, 9vw, 2.8rem);
+
   /* Background & surfaces */
   --bg:             #020408;
   --surface-1:      #060c18;
@@ -46,6 +80,10 @@
 
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+html {
+  overflow-x: clip;
 }
 
 body {
@@ -246,4 +284,71 @@ main, header, footer {
 
 .aurora-2 {
   animation: auroraFloat2 13s ease-in-out infinite;
+}
+
+/* ===== REDUCED-MOTION SUPPORT ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Aurora blobs — freeze */
+  .aurora-1,
+  .aurora-2 {
+    animation: none;
+  }
+
+  /* Confetti — hide entirely (motion only, state preserved elsewhere) */
+  @keyframes confettiDrop {
+    from, to { opacity: 0; transform: none; }
+  }
+
+  /* Shimmer text — show as static gold */
+  .text-shimmer-gold {
+    animation: none;
+    background: var(--gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Radial pulse rings */
+  @keyframes radialPulse {
+    from, to { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+  }
+
+  /* Solved burst */
+  @keyframes solvedBurst {
+    from, to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Orbital spinners */
+  @keyframes orbitSpin {
+    from, to { transform: rotate(0deg); }
+  }
+
+  @keyframes orbitSpinReverse {
+    from, to { transform: rotate(0deg); }
+  }
+
+  /* Pulse beat */
+  @keyframes pulseBeat {
+    from, to { opacity: 0.7; transform: scale(1); }
+  }
+
+  /* All animate-* utility classes — suppress motion */
+  .animate-slide-up-fade,
+  .animate-fade-slide-down,
+  .animate-pop,
+  .animate-lock-in,
+  .animate-shake,
+  .animate-count-up,
+  .animate-fade-in {
+    animation: none;
+  }
+}
+
+/* ===== FOCUS-VISIBLE SAFETY NET ===== */
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
 }

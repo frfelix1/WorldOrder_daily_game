@@ -40,7 +40,7 @@ export function CorrectValuesRow({ stat, countries }: CorrectValuesRowProps): Re
               flexDirection: 'column',
               alignItems: 'center',
               gap: '2px',
-              fontSize: '9px',
+              fontSize: 'var(--fs-micro)',
               color: 'var(--text-muted)',
               textAlign: 'center',
             }}
@@ -54,8 +54,8 @@ export function CorrectValuesRow({ stat, countries }: CorrectValuesRowProps): Re
             ) : (
               <span aria-hidden="true" style={{ fontSize: '12px' }}>🏳</span>
             )}
-            <span style={{ fontWeight: 600, fontSize: '8px', lineHeight: 1.2 }}>{name}</span>
-            <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: '8px', lineHeight: 1.2 }}>
+            <span style={{ fontWeight: 600, fontSize: 'var(--fs-micro)', lineHeight: 1.2 }}>{name}</span>
+            <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 'var(--fs-micro)', lineHeight: 1.2 }}>
               {display}
             </span>
           </div>

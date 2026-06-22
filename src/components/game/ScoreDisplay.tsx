@@ -28,7 +28,7 @@ export function ScoreDisplay({ score }: ScoreDisplayProps) {
         </span>
         <span
           style={{
-            fontSize: '15px',
+            fontSize: 'var(--fs-score)',
             fontWeight: 700,
             fontVariantNumeric: 'tabular-nums',
             background: 'linear-gradient(90deg, var(--gold-dim), var(--gold), var(--gold-bright))',

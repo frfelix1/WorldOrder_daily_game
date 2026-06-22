@@ -7,7 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- SPECKIT START -->
 ## Active Feature Plan
 
-**Branch**: `feature/summary`
-**Plan**: `specs/008-revamp-results-screen/plan.md`
-**Spec**: `specs/008-revamp-results-screen/spec.md`
+**Branch**: `feature/mobile-responsive`
+**Plan**: `specs/009-mobile-responsive-accessible/plan.md`
+**Spec**: `specs/009-mobile-responsive-accessible/spec.md`
 <!-- SPECKIT END -->

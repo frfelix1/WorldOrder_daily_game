@@ -28,7 +28,7 @@ export function StatPanel({ stat, isSolved, statIndex }: StatPanelProps) {
       data-testid="stat-panel"
       data-stat-index={statIndex}
       style={{
-        padding: '18px 20px',
+        padding: 'var(--slot-pad-y, 18px) var(--slot-pad-x, 20px)',
         borderRadius: '16px',
         border: `1px solid ${borderColor}`,
         background: 'var(--surface-1)',
@@ -124,7 +124,7 @@ export function StatPanel({ stat, isSolved, statIndex }: StatPanelProps) {
       <Tooltip content={stat.tooltip}>
         <span
           style={{
-            fontSize: '18px',
+            fontSize: 'var(--fs-stat-title)',
             fontWeight: 700,
             color: 'var(--text-primary)',
             fontFamily: 'var(--font-cinzel)',
