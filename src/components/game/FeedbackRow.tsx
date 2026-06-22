@@ -58,7 +58,7 @@ export function FeedbackRow({ guess, countries, statIndex = 1, guessIndex = 1, v
             <span
               aria-hidden="true"
               style={{
-                fontSize: '10px',
+                fontSize: 'var(--fs-micro)',
                 color: isCorrect ? 'rgba(0,232,150,0.9)' : 'rgba(255,48,98,0.9)',
                 lineHeight: 1,
               }}
@@ -80,7 +80,7 @@ export function FeedbackRow({ guess, countries, statIndex = 1, guessIndex = 1, v
             {/* Country name */}
             <span
               style={{
-                fontSize: '11px',
+                fontSize: 'var(--fs-label)',
                 color: 'var(--text-primary)',
                 textAlign: 'center',
                 overflow: 'hidden',
@@ -97,7 +97,7 @@ export function FeedbackRow({ guess, countries, statIndex = 1, guessIndex = 1, v
             {revealedValue != null && (
               <span
                 style={{
-                  fontSize: '9px',
+                  fontSize: 'var(--fs-micro)',
                   color: 'rgba(0,232,150,0.65)',
                   textAlign: 'center',
                   overflow: 'hidden',

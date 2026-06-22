@@ -26,16 +26,16 @@ describe('Tooltip', () => {
 
   it('appears after focus on trigger', () => {
     render(<Tooltip content="Tooltip text"><button>Trigger</button></Tooltip>);
-    const trigger = screen.getByText('Trigger').closest('[aria-describedby]') as HTMLElement;
-    fireEvent.focus(trigger);
+    const triggerBtn = screen.getByTestId('tooltip-trigger');
+    fireEvent.focus(triggerBtn);
     expect(screen.getByRole('tooltip')).toBeVisible();
   });
 
   it('is hidden after blur on trigger', () => {
     render(<Tooltip content="Tooltip text"><button>Trigger</button></Tooltip>);
-    const trigger = screen.getByText('Trigger').closest('[aria-describedby]') as HTMLElement;
-    fireEvent.focus(trigger);
-    fireEvent.blur(trigger);
+    const triggerBtn = screen.getByTestId('tooltip-trigger');
+    fireEvent.focus(triggerBtn);
+    fireEvent.blur(triggerBtn);
     expect(screen.getByRole('tooltip', { hidden: true })).not.toBeVisible();
   });
 
@@ -53,5 +53,48 @@ describe('Tooltip', () => {
     const tooltipEl = document.getElementById(tooltipId!);
     expect(tooltipEl).not.toBeNull();
     expect(tooltipEl?.getAttribute('role')).toBe('tooltip');
+  });
+
+  // T025: Tap/click to toggle open and dismiss (mobile accessibility)
+  it('T025: clicking/tapping the trigger toggles the tooltip open', () => {
+    render(<Tooltip content="Tap tooltip"><button>Tap me</button></Tooltip>);
+    const triggerBtn = screen.getByTestId('tooltip-trigger');
+    // Initially hidden
+    expect(screen.getByRole('tooltip', { hidden: true })).not.toBeVisible();
+    // Click to open
+    fireEvent.click(triggerBtn);
+    expect(screen.getByRole('tooltip')).toBeVisible();
+  });
+
+  it('T025: clicking outside the tooltip dismisses it', () => {
+    render(
+      <div>
+        <Tooltip content="Tap tooltip"><button>Tap me</button></Tooltip>
+        <div data-testid="outside">Outside</div>
+      </div>
+    );
+    const triggerBtn = screen.getByTestId('tooltip-trigger');
+    // Open
+    fireEvent.click(triggerBtn);
+    expect(screen.getByRole('tooltip')).toBeVisible();
+    // Click outside
+    fireEvent.mouseDown(screen.getByTestId('outside'));
+    expect(screen.getByRole('tooltip', { hidden: true })).not.toBeVisible();
+  });
+
+  it('T025: pressing Escape dismisses the tooltip', () => {
+    render(<Tooltip content="Tap tooltip"><button>Tap me</button></Tooltip>);
+    const triggerBtn = screen.getByTestId('tooltip-trigger');
+    // Open
+    fireEvent.click(triggerBtn);
+    expect(screen.getByRole('tooltip')).toBeVisible();
+    // Escape
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByRole('tooltip', { hidden: true })).not.toBeVisible();
+  });
+
+  it('T025: tooltip trigger has data-testid="tooltip-trigger"', () => {
+    render(<Tooltip content="Test"><button>Click</button></Tooltip>);
+    expect(screen.getByTestId('tooltip-trigger')).toBeInTheDocument();
   });
 });

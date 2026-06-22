@@ -16,6 +16,7 @@ vi.mock('@dnd-kit/core', () => ({
   closestCenter: vi.fn(),
   PointerSensor: vi.fn(),
   KeyboardSensor: vi.fn(),
+  TouchSensor: vi.fn(),
   useSensor: vi.fn(),
   useSensors: vi.fn(() => []),
   useDroppable: () => ({ setNodeRef: () => {}, isOver: false }),

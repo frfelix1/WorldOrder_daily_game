@@ -27,6 +27,7 @@ vi.mock('@dnd-kit/core', () => ({
   closestCenter: vi.fn(),
   PointerSensor: vi.fn(),
   KeyboardSensor: vi.fn(),
+  TouchSensor: vi.fn(),
   useSensor: vi.fn(),
   useSensors: vi.fn(() => []),
   useDroppable: () => ({ setNodeRef: () => {}, isOver: false }),
@@ -427,7 +428,7 @@ describe('RankingBoard drag-and-drop', () => {
 // ── US3: PoolChipItem enlarged styling ────────────────────────────────────────
 
 describe('RankingBoard — US3 PoolChipItem enlarged styling', () => {
-  it('each pool chip has padding 12px 20px', () => {
+  it('each pool chip has token-based padding (paddingTop/paddingBottom/paddingLeft/paddingRight set)', () => {
     render(
       <RankingBoard
         countries={countries}
@@ -438,7 +439,13 @@ describe('RankingBoard — US3 PoolChipItem enlarged styling', () => {
     );
     const chips = screen.getAllByTestId('pool-chip');
     for (const chip of chips) {
-      expect(chip).toHaveStyle({ padding: '12px 20px' });
+      // Padding is now driven by CSS custom properties; assert the style attribute is present
+      // (CSS var resolution happens at render time in the browser, not in jsdom)
+      const style = (chip as HTMLElement).style;
+      expect(style.paddingTop).toBeTruthy();
+      expect(style.paddingBottom).toBeTruthy();
+      expect(style.paddingLeft).toBeTruthy();
+      expect(style.paddingRight).toBeTruthy();
     }
   });
 

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cinzel, Outfit } from 'next/font/google';
 import './globals.css';
 
@@ -18,6 +18,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: 'WorldOrder',
   description: 'Daily geography ranking game — rank five countries against three stats.',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#020408',
+  colorScheme: 'dark',
 };
 
 export default function RootLayout({

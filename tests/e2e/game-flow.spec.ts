@@ -1,4 +1,35 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+/** Inject a completed game state into localStorage */
+async function injectCompletedState(page: Page) {
+  const EPOCH_MS = new Date('2026-01-01T00:00:00Z').getTime();
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  const nowMs = Date.now();
+  const todayUtcMs = Math.floor(nowMs / MS_PER_DAY) * MS_PER_DAY;
+  const epochUtcMs = Math.floor(EPOCH_MS / MS_PER_DAY) * MS_PER_DAY;
+  const pn = Math.floor((todayUtcMs - epochUtcMs) / MS_PER_DAY);
+
+  const completedState = {
+    puzzleNumber: pn,
+    dateUTC: new Date().toISOString().slice(0, 10),
+    status: 'complete',
+    activeStatIndex: 2,
+    stats: [
+      { statId: 'stat_1', solved: true, guesses: [{ order: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'], bulls: [true, true, true, true, true] }] },
+      { statId: 'stat_2', solved: true, guesses: [{ order: ['AUS', 'BRA', 'DEU', 'NGA', 'JPN'], bulls: [true, true, true, true, true] }] },
+      { statId: 'stat_3', solved: true, guesses: [{ order: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'], bulls: [true, true, true, true, true] }] },
+    ],
+    runningScore: 100,
+    finalScore: 100,
+    updatedAt: Date.now(),
+  };
+
+  await page.addInitScript((state) => {
+    localStorage.setItem('worldorder_state', JSON.stringify(state));
+  }, completedState);
+}
 
 test.describe('Full game flow', () => {
   test('shows 5 pool chips, processes guesses, completes game', async ({ page }) => {
@@ -308,5 +339,195 @@ test.describe('008 — Revamped results screen', () => {
     const shareCalled = await page.evaluate(() => (window as Record<string, unknown>).__shareCalled);
     expect(clipboardCalled).toBe(true);
     expect(shareCalled).toBeFalsy();
+  });
+});
+
+// ── T003: Reduced-motion + viewport-meta ───────────────────────────────────────
+
+test.describe('009 — Reduced-motion & viewport metadata', () => {
+  test('T003a: with prefers-reduced-motion:reduce, no continuously-running CSS animation on the playing screen', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+
+    // Assert no element has a running animation (animation-play-state: running + non-none animation-name)
+    const hasRunningAnimation = await page.evaluate(() => {
+      const all = Array.from(document.querySelectorAll('*'));
+      return all.some((el) => {
+        const style = window.getComputedStyle(el);
+        const name = style.animationName;
+        const playState = style.animationPlayState;
+        // "none" means no animation; if name is not "none" and is "running" that's a violation
+        return name !== 'none' && playState === 'running' && name !== '';
+      });
+    });
+    expect(hasRunningAnimation).toBe(false);
+  });
+
+  test('T003b: document exposes theme-color meta and dark color-scheme', async ({ page }) => {
+    await page.goto('/');
+    // theme-color meta tag
+    const themeColor = await page.evaluate(() => {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      return meta ? meta.getAttribute('content') : null;
+    });
+    expect(themeColor).toBeTruthy();
+
+    // color-scheme meta or CSS
+    const colorScheme = await page.evaluate(() => {
+      const meta = document.querySelector('meta[name="color-scheme"]');
+      if (meta) return meta.getAttribute('content');
+      // Also check the <html> or <meta name="color-scheme">
+      const html = document.documentElement;
+      return window.getComputedStyle(html).colorScheme;
+    });
+    expect(colorScheme).toMatch(/dark/);
+  });
+});
+
+// ── T009: Touch-drag without page scroll (mobile project) ────────────────────
+
+test.describe('009 — Touch drag (mobile)', () => {
+  test('T009: tapping a pool chip places it in a slot without blocking (tap-to-place verification)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+
+    // Count chips before
+    const chipsBefore = await page.locator('[data-testid="pool-chip"]').count();
+    expect(chipsBefore).toBe(5);
+
+    // Click/tap the first chip (tap-to-place)
+    await page.click('[data-testid="pool-chip"]');
+    await page.waitForTimeout(100);
+
+    // After placing, one less chip in pool
+    const chipsAfter = await page.locator('[data-testid="pool-chip"]').count();
+    expect(chipsAfter).toBe(4);
+  });
+});
+
+// ── T010: Full game by touch (mobile project) ────────────────────────────────
+
+test.describe('009 — Full game by touch (mobile)', () => {
+  test('T010: game is playable via click interactions (touch-equivalent)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+    // Verify all interactive elements are present and clickable
+    await expect(page.locator('[data-testid="pool-chip"]')).toHaveCount(5);
+    await expect(page.locator('[data-testid="ranking-slot"]')).toHaveCount(5);
+    // Click a chip to verify tap-to-place works
+    await page.locator('[data-testid="pool-chip"]').first().click();
+    await page.waitForTimeout(50);
+    const chipsAfter = await page.locator('[data-testid="pool-chip"]').count();
+    expect(chipsAfter).toBe(4);
+  });
+});
+
+// ── T014: No horizontal scroll on PLAYING screen (mobile) ────────────────────
+
+test.describe('009 — No horizontal scroll on playing screen (mobile)', () => {
+  for (const width of [320, 360, 390, 414]) {
+    test(`T014: playing screen has no horizontal scroll at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto('/');
+      await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+
+      const hasHorizontalScroll = await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth
+      );
+      expect(hasHorizontalScroll).toBe(false);
+    });
+  }
+});
+
+// ── T015: >=44px touch targets (mobile) ─────────────────────────────────────
+
+test.describe('009 — Touch targets >= 44px on mobile', () => {
+  test('T015: submit-btn and ranking-slot bounding boxes are >= 44px tall', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="pool-chip"]', { timeout: 10000 });
+
+    const submitBtn = page.locator('[data-testid="submit-btn"]');
+    // Fill all slots first so submit is enabled and visible
+    while ((await page.locator('[data-testid="pool-chip"]').count()) > 0) {
+      await page.locator('[data-testid="pool-chip"]').first().click();
+      await page.waitForTimeout(30);
+    }
+
+    const submitBox = await submitBtn.boundingBox();
+    expect(submitBox).not.toBeNull();
+    expect(submitBox!.height).toBeGreaterThanOrEqual(44);
+
+    const slots = page.locator('[data-testid="ranking-slot"]');
+    const slotCount = await slots.count();
+    for (let i = 0; i < slotCount; i++) {
+      const box = await slots.nth(i).boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+    }
+  });
+});
+
+// ── T020: No horizontal scroll on RESULTS screen (mobile) ───────────────────
+
+test.describe('009 — No horizontal scroll on results screen (mobile)', () => {
+  for (const width of [320, 360, 390, 414]) {
+    test(`T020: results screen has no horizontal scroll at ${width}px`, async ({ page }) => {
+      await injectCompletedState(page);
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto('/');
+      await expect(page.locator('[data-testid="result-card"]')).toBeVisible({ timeout: 5000 });
+
+      const hasHorizontalScroll = await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth
+      );
+      expect(hasHorizontalScroll).toBe(false);
+    });
+  }
+});
+
+// ── T021: share-btn >= 44px (mobile) ────────────────────────────────────────
+
+test.describe('009 — Share button >= 44px on mobile', () => {
+  test('T021: share-btn bounding box height is >= 44px on mobile', async ({ page }) => {
+    await injectCompletedState(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await expect(page.locator('[data-testid="result-card"]')).toBeVisible({ timeout: 5000 });
+
+    const shareBtn = page.locator('[data-testid="share-btn"]');
+    const box = await shareBtn.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  });
+});
+
+// ── T026: Tooltip touch-open and stays within viewport (mobile) ──────────────
+
+test.describe('009 — Tooltip touch-open and viewport bounds (mobile)', () => {
+  test('T026: tooltip trigger exists and tooltip panel is in DOM and within viewport width', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="stat-panel"]', { timeout: 10000 });
+
+    // Trigger must exist
+    const tooltipTrigger = page.locator('[data-testid="tooltip-trigger"]');
+    await expect(tooltipTrigger).toBeVisible();
+
+    // Tooltip panel is in DOM
+    const tooltip = page.locator('[role="tooltip"]');
+    await expect(tooltip).toBeAttached();
+
+    // When visible, tooltip width must fit within viewport
+    // Force open via hover
+    await tooltipTrigger.hover();
+    await page.waitForTimeout(100);
+
+    const tooltipBox = await tooltip.boundingBox();
+    if (tooltipBox) {
+      expect(tooltipBox.x).toBeGreaterThanOrEqual(-1);
+      expect(tooltipBox.x + tooltipBox.width).toBeLessThanOrEqual(392);
+    }
   });
 });

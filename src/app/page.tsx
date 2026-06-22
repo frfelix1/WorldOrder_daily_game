@@ -427,7 +427,17 @@ export default function GamePage() {
   // ── Complete ─────────────────────────────────────────────────────────────────
   if (pageStatus === 'complete' && gameState && puzzle) {
     return (
-      <main className="flex flex-col items-center justify-center min-h-screen p-4">
+      <main
+        className="flex flex-col items-center justify-center min-h-screen"
+        style={{
+          paddingTop: 'var(--space-page-top)',
+          paddingBottom: 'max(var(--space-page), env(safe-area-inset-bottom, 0px))',
+          paddingLeft: 'max(var(--space-page), env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(var(--space-page), env(safe-area-inset-right, 0px))',
+          boxSizing: 'border-box',
+          width: '100%',
+        }}
+      >
         <LiveRegion message={announcement} />
         <ResultCard state={gameState} puzzleNumber={puzzleNumber} puzzle={puzzle} />
         {IS_DEV && (
@@ -482,8 +492,8 @@ export default function GamePage() {
           position: 'fixed',
           top: '-8%',
           right: '-12%',
-          width: '520px',
-          height: '520px',
+          width: 'var(--blob-size)',
+          height: 'var(--blob-size)',
           borderRadius: '50%',
           background: 'radial-gradient(circle, rgba(232,197,71,0.08) 0%, transparent 65%)',
           filter: 'blur(60px)',
@@ -498,8 +508,8 @@ export default function GamePage() {
           position: 'fixed',
           bottom: '-10%',
           left: '-12%',
-          width: '500px',
-          height: '500px',
+          width: 'var(--blob-size)',
+          height: 'var(--blob-size)',
           borderRadius: '50%',
           background: 'radial-gradient(circle, rgba(0,196,232,0.06) 0%, transparent 65%)',
           filter: 'blur(70px)',
@@ -521,8 +531,8 @@ export default function GamePage() {
               key={i}
               className="absolute rounded-full"
               style={{
-                width: '700px',
-                height: '700px',
+                width: 'var(--overlay-ring)',
+                height: 'var(--overlay-ring)',
                 top: '50%',
                 left: '50%',
                 background: 'radial-gradient(circle, rgba(232,197,71,0.18) 0%, transparent 70%)',
@@ -539,7 +549,7 @@ export default function GamePage() {
             style={{
               fontFamily: 'var(--font-cinzel)',
               fontWeight: 900,
-              fontSize: '2.8rem',
+              fontSize: 'var(--solved-fs)',
               letterSpacing: '0.3em',
               color: 'var(--gold)',
               textShadow: '0 0 40px rgba(232,197,71,0.9), 0 0 80px rgba(232,197,71,0.4)',
@@ -554,7 +564,21 @@ export default function GamePage() {
         </div>
       )}
 
-      <div className="w-full max-w-md px-4 pt-6 pb-12 flex flex-col gap-5" style={{ position: 'relative', zIndex: 1 }}>
+      <div
+        className="w-full flex flex-col"
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          maxWidth: 'var(--board-max)',
+          paddingTop: 'var(--space-page-top)',
+          paddingBottom: 'max(var(--space-page), env(safe-area-inset-bottom, 0px))',
+          paddingLeft: 'max(var(--space-page), env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(var(--space-page), env(safe-area-inset-right, 0px))',
+          gap: 'var(--gap-section)',
+          alignSelf: 'center',
+          width: '100%',
+        }}
+      >
 
         {/* ── Header ── */}
         <header
@@ -562,8 +586,8 @@ export default function GamePage() {
           style={{ borderBottom: '1px solid rgba(232,197,71,0.08)' }}
         >
           <h1
-            className="text-shimmer-gold tracking-[0.25em] text-4xl"
-            style={{ fontFamily: 'var(--font-cinzel)', fontWeight: 900 }}
+            className="text-shimmer-gold tracking-[0.25em]"
+            style={{ fontFamily: 'var(--font-cinzel)', fontWeight: 900, fontSize: 'var(--fs-brand)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1 }}
           >
             WorldOrder
           </h1>
