@@ -8,9 +8,9 @@ interface StatPanelProps {
 }
 
 function directionLabel(stat: StatDef): string {
-  return stat.direction === 'desc'
-    ? `Rank from most ${stat.label} to least ${stat.label}`
-    : `Rank from least ${stat.label} to most ${stat.label}`;
+  // The value line is always oriented least → most (left → right), independent of
+  // the stat's underlying ranking direction (feature 010).
+  return `Place on the line: least ${stat.label} left, most ${stat.label} right`;
 }
 
 export function StatPanel({ stat, isSolved, statIndex }: StatPanelProps) {

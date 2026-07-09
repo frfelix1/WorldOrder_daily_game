@@ -23,15 +23,19 @@ describe('StatPanel', () => {
     expect(screen.getByText('Population')).toBeInTheDocument();
   });
 
-  it('renders direction label for desc direction', () => {
+  it('renders the line-placement label for desc direction (least left, most right)', () => {
     render(<StatPanel stat={mockStat} isSolved={false} statIndex={0} />);
-    expect(screen.getByTestId('stat-direction')).toHaveTextContent('Rank from most Population to least Population');
+    expect(screen.getByTestId('stat-direction')).toHaveTextContent(
+      'Place on the line: least Population left, most Population right',
+    );
   });
 
-  it('renders direction label for asc direction', () => {
+  it('renders the same least→most line label regardless of direction', () => {
     const ascStat = { ...mockStat, direction: 'asc' as const, label: 'Debt' };
     render(<StatPanel stat={ascStat} isSolved={false} statIndex={0} />);
-    expect(screen.getByTestId('stat-direction')).toHaveTextContent('Rank from least Debt to most Debt');
+    expect(screen.getByTestId('stat-direction')).toHaveTextContent(
+      'Place on the line: least Debt left, most Debt right',
+    );
   });
 
   it('shows solved badge when isSolved is true', () => {

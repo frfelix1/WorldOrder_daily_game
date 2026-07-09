@@ -72,6 +72,15 @@ export interface PuzzleFile {
 export interface Guess {
   order: string[];  // Submitted ranking — array of Country IDs, position 0 = rank 1
   bulls: boolean[]; // Position-matched: bulls[i] = true if order[i] is correct
+  /**
+   * Line-scale placement per country as a fraction t ∈ [0, 1] along the value line,
+   * where 0 = far left (smallest value of the five) and 1 = far right (largest).
+   * Keyed by ISO alpha-3 country ID. `order` is derived from these fractions (ascending,
+   * tie-broken by country ID). Optional for backwards-compatibility with guesses recorded
+   * before feature 010 (line-scale placement); when absent, proximity scoring treats
+   * accuracy as neutral (A = 1). See src/lib/line-scale.ts and feature 010 spec.
+   */
+  positions?: Record<string, number>;
 }
 
 export interface StatSession {

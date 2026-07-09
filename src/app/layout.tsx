@@ -17,7 +17,7 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: 'WorldOrder',
-  description: 'Daily geography ranking game — rank five countries against three stats.',
+  description: 'Daily geography game — place five countries on a value line across three stats.',
 };
 
 export const viewport: Viewport = {

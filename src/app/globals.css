@@ -24,6 +24,9 @@
 
   /* Component dimensions */
   --board-max:    min(100%, 28rem);
+  /* Line-scale slider breaks out wider than the column; 100vw clamp keeps
+     mobile (320px) free of horizontal scroll. */
+  --line-board-width: min(100vw - 2 * var(--space-page), 46rem);
   --chip-pad-y:   clamp(10px, 2.8vw, 12px);
   --chip-pad-x:   clamp(14px, 4vw, 20px);
   --slot-pad-y:   clamp(10px, 2.8vw, 12px);
@@ -351,4 +354,44 @@ main, header, footer {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+/* ===== LINE-SCALE TOKENS (feature 010) ===== */
+
+/* Smooth position changes for keyboard nudges; disabled during active drag
+   (dnd-kit applies its own transform) and under reduced-motion. */
+.line-token {
+  transition: left 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.line-token[data-dragging='true'] {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line-token {
+    transition: none;
+  }
+}
+
+/* Placed tokens show flag only; reveal the country name on hover/focus.
+   Keyboard users get :focus-visible parity so the name is reachable. */
+.line-token-name {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+.line-token:hover .line-token-name,
+.line-token:focus-visible .line-token-name {
+  opacity: 1;
+}
+/* Lift a hovered/focused token above neighbours so its name isn't clipped. */
+.line-token:hover,
+.line-token:focus-visible {
+  z-index: 50;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line-token-name {
+    transition: none;
+  }
 }

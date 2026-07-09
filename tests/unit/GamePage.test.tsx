@@ -9,64 +9,94 @@ vi.mock('next/font/google', () => ({
   Geist_Mono: () => ({ variable: '--font-geist-mono' }),
 }));
 
-// Mock @dnd-kit/core — RankingBoard uses useDraggable, useDroppable, DragOverlay
-vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children ?? null}</>,
-  closestCenter: vi.fn(),
-  PointerSensor: vi.fn(),
-  KeyboardSensor: vi.fn(),
-  TouchSensor: vi.fn(),
-  useSensor: vi.fn(),
-  useSensors: vi.fn(() => []),
-  useDroppable: () => ({ setNodeRef: () => {}, isOver: false }),
-  useDraggable: () => ({
-    attributes: {},
-    listeners: {},
-    setNodeRef: () => {},
-    transform: null,
-    isDragging: false,
-  }),
-}));
+/**
+ * Mock the LineScaleBoard so tests can drive placements deterministically without
+ * a real drag. The mock renders one button per country; clicking it places that
+ * country at a fraction derived from a test-controlled position map, and exposes
+ * the live `positions`/`locked`/`disabled` props for assertions.
+ *
+ * Tests set `window.__setPlacement(countryId, fraction)` before clicking a token
+ * button, or use the convenience `placeAll` helper below.
+ */
+const placementForCountry: Record<string, number> = {};
 
-// Mock @dnd-kit/sortable — still needed for CountryCard (kept as legacy)
-vi.mock('@dnd-kit/sortable', () => ({
-  SortableContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  verticalListSortingStrategy: {},
-  sortableKeyboardCoordinates: {},
-  arrayMove: vi.fn(),
-  useSortable: () => ({
-    attributes: { 'aria-roledescription': 'sortable item' },
-    listeners: {},
-    setNodeRef: () => {},
-    transform: null,
-    transition: null,
-    isDragging: false,
-  }),
-}));
-
-vi.mock('@dnd-kit/utilities', () => ({
-  CSS: {
-    Transform: { toString: () => '' },
-    Translate: { toString: () => '' },
-  },
+vi.mock('../../src/components/game/LineScaleBoard', () => ({
+  LineScaleBoard: ({
+    countries,
+    positions,
+    locked,
+    disabled,
+    onPositionsChange,
+  }: {
+    countries: { id: string; name: string }[];
+    positions: Record<string, number>;
+    locked: Record<string, boolean>;
+    disabled?: boolean;
+    onPositionsChange: (p: Record<string, number>) => void;
+  }) => (
+    <div data-testid="line-scale-board" data-disabled={String(!!disabled)}>
+      {countries.map((c) => (
+        <button
+          key={c.id}
+          data-testid={`place-${c.id}`}
+          data-placed={String(positions[c.id] != null)}
+          data-locked={String(!!locked[c.id])}
+          onClick={() =>
+            onPositionsChange({ ...positions, [c.id]: placementForCountry[c.id] ?? 0.5 })
+          }
+        >
+          {c.name}
+        </button>
+      ))}
+    </div>
+  ),
 }));
 
 const mockPuzzle: PuzzleFile = {
   date: new Date().toISOString().slice(0, 10),
   countries: [
-    { id: 'NGA', name: 'Nigeria',   flagCode: 'ng' },
-    { id: 'BRA', name: 'Brazil',    flagCode: 'br' },
-    { id: 'DEU', name: 'Germany',   flagCode: 'de' },
-    { id: 'JPN', name: 'Japan',     flagCode: 'jp' },
+    { id: 'NGA', name: 'Nigeria', flagCode: 'ng' },
+    { id: 'BRA', name: 'Brazil', flagCode: 'br' },
+    { id: 'DEU', name: 'Germany', flagCode: 'de' },
+    { id: 'JPN', name: 'Japan', flagCode: 'jp' },
     { id: 'AUS', name: 'Australia', flagCode: 'au' },
   ],
   stats: [
     { id: 'stat_1', label: 'Population', category: 'demographics', tooltip: 'Population tooltip', direction: 'desc', solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'], unit: 'people', values: { NGA: 218541212, BRA: 215313498, DEU: 84316622, JPN: 125124989, AUS: 26461166 } },
-    { id: 'stat_2', label: 'Land Area',  category: 'geography',    tooltip: 'Land area tooltip',  direction: 'desc', solution: ['AUS', 'BRA', 'DEU', 'NGA', 'JPN'], unit: 'km²',   values: { NGA: 923768, BRA: 8515767, DEU: 357114, JPN: 377975, AUS: 7692024 } },
-    { id: 'stat_3', label: 'Urban %',    category: 'demographics', tooltip: 'Urban tooltip',      direction: 'desc', solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'], unit: '%',     values: { NGA: 54.3, BRA: 87.6, DEU: 77.5, JPN: 91.8, AUS: 86.2 } },
+    { id: 'stat_2', label: 'Land Area', category: 'geography', tooltip: 'Land area tooltip', direction: 'desc', solution: ['AUS', 'BRA', 'DEU', 'NGA', 'JPN'], unit: 'km²', values: { NGA: 923768, BRA: 8515767, DEU: 357114, JPN: 377975, AUS: 7692024 } },
+    { id: 'stat_3', label: 'Urban %', category: 'demographics', tooltip: 'Urban tooltip', direction: 'desc', solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'], unit: '%', values: { NGA: 54.3, BRA: 87.6, DEU: 77.5, JPN: 91.8, AUS: 86.2 } },
   ],
 };
+
+/**
+ * Place all five countries along the line so their left-to-right order matches
+ * `order` (index 0 = leftmost). Assigns evenly spaced fractions.
+ */
+function placeInOrder(order: string[]) {
+  order.forEach((id, i) => {
+    placementForCountry[id] = order.length === 1 ? 0 : i / (order.length - 1);
+  });
+  for (const id of order) {
+    fireEvent.click(screen.getByTestId(`place-${id}`));
+  }
+}
+
+/**
+ * The correct left-to-right order for a stat = country IDs ascending by value
+ * (least → most), matching the value line's orientation. Ties broken by ID.
+ */
+function targetOrder(statIndex: number): string[] {
+  const vals = mockPuzzle.stats[statIndex].values!;
+  return Object.keys(vals).slice().sort((a, b) => {
+    const diff = vals[a] - vals[b];
+    return diff !== 0 ? diff : a < b ? -1 : 1;
+  });
+}
+
+/** Solve a stat by placing tokens in the correct value-ascending order. */
+function solveOrder(statIndex: number): string[] {
+  return targetOrder(statIndex);
+}
 
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
@@ -74,33 +104,38 @@ beforeEach(() => {
     json: () => Promise.resolve(mockPuzzle),
   }));
   localStorage.clear();
+  for (const k of Object.keys(placementForCountry)) delete placementForCountry[k];
 });
 
-describe('GamePage', () => {
+describe('GamePage — loading & board', () => {
   it('shows loading spinner initially', () => {
     render(<GamePage />);
     expect(screen.getByText(/Loading today/)).toBeInTheDocument();
   });
 
-  it('shows 5 pool chips after puzzle loads', async () => {
+  it('shows the line-scale board after puzzle loads', async () => {
     render(<GamePage />);
     await waitFor(() => {
-      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
+      expect(screen.getByTestId('line-scale-board')).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 
-  it('shows ranking board after puzzle loads', async () => {
+  it('renders one placement control per country (5)', async () => {
     render(<GamePage />);
     await waitFor(() => {
-      expect(screen.getByTestId('ranking-board')).toBeInTheDocument();
+      expect(screen.getByTestId('place-NGA')).toBeInTheDocument();
     }, { timeout: 3000 });
+    for (const c of mockPuzzle.countries) {
+      expect(screen.getByTestId(`place-${c.id}`)).toBeInTheDocument();
+    }
   });
 
-  it('shows stat panel after puzzle loads', async () => {
+  it('shows the stat panel and score display after load', async () => {
     render(<GamePage />);
     await waitFor(() => {
       expect(screen.getByTestId('stat-panel')).toBeInTheDocument();
     }, { timeout: 3000 });
+    expect(screen.getByLabelText(/Running score: 0/)).toBeInTheDocument();
   });
 
   it('shows error state when fetch fails', async () => {
@@ -111,21 +146,197 @@ describe('GamePage', () => {
       expect(screen.getByRole('button', { name: /Try Again/i })).toBeInTheDocument();
     }, { timeout: 3000 });
   });
+});
 
-  it('shows result card immediately if completed state is in localStorage', async () => {
+describe('GamePage — submit gating (US3)', () => {
+  it('submit is disabled until all five countries are placed', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).toBeInTheDocument(), { timeout: 3000 });
+
+    // Initially disabled.
+    expect(screen.getByTestId('submit-btn')).toBeDisabled();
+
+    // Place four of five — still disabled.
+    for (const id of ['NGA', 'BRA', 'DEU', 'JPN']) {
+      fireEvent.click(screen.getByTestId(`place-${id}`));
+    }
+    expect(screen.getByTestId('submit-btn')).toBeDisabled();
+
+    // Place the fifth — now enabled.
+    fireEvent.click(screen.getByTestId('place-AUS'));
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+  });
+});
+
+describe('GamePage — wrong guess feedback (US3)', () => {
+  it('submitting a wrong order records a feedback row and does not solve', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+
+    // Place in the exact reverse of the correct (value-ascending) order → all wrong
+    // except any token that happens to land in the middle.
+    const reversed = [...targetOrder(0)].reverse();
+    placeInOrder(reversed);
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+
+    fireEvent.click(screen.getByTestId('submit-btn'));
+
+    await waitFor(() => {
+      expect(screen.queryAllByTestId('feedback-row').length).toBeGreaterThanOrEqual(1);
+    }, { timeout: 3000 });
+    // Not solved → submit button still present (advance button not shown).
+    expect(screen.getByTestId('submit-btn')).toBeInTheDocument();
+    expect(screen.queryByTestId('next-stage-btn')).not.toBeInTheDocument();
+  });
+
+  it('a correctly-positioned token becomes locked after a partially-correct guess', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+
+    // Reverse order keeps the middle token (rank 3 of 5) in its correct spot; it locks.
+    const reversed = [...targetOrder(0)].reverse();
+    const middle = reversed[2];
+    placeInOrder(reversed);
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('submit-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId(`place-${middle}`)).toHaveAttribute('data-locked', 'true');
+    }, { timeout: 3000 });
+  });
+});
+
+describe('GamePage — solve, advance, complete (US3)', () => {
+  async function solveStat(statIndex: number) {
+    placeInOrder(solveOrder(statIndex));
+    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+    fireEvent.click(screen.getByTestId('submit-btn'));
+  }
+
+  it('solving a non-final stat shows the Next stage button and does not auto-advance', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+
+    await solveStat(0);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument();
+    }, { timeout: 3000 });
+    expect(screen.getByTestId('next-stage-btn')).toHaveTextContent(/Next stage/i);
+    // Still on stat 1 until the user advances.
+    expect(screen.getByTestId('stat-panel')).toBeInTheDocument();
+  });
+
+  it('solving all three stats completes the game and shows the result card', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+
+    await solveStat(0);
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument(), { timeout: 3000 });
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
+
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+    await solveStat(1);
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument(), { timeout: 3000 });
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
+
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+    await solveStat(2);
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument(), { timeout: 3000 });
+    // Final stage → button reads "Show Recap".
+    expect(screen.getByTestId('next-stage-btn')).toHaveTextContent(/Show Recap/i);
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('result-card')).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('a perfect first-try solve of all three stats yields a score of 100', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+
+    // Place each stat exactly at its true fractions so accuracy = 1 and order is correct.
+    for (let s = 0; s < 3; s++) {
+      const stat = mockPuzzle.stats[s];
+      const vals = stat.values!;
+      const min = Math.min(...Object.values(vals));
+      const max = Math.max(...Object.values(vals));
+      for (const id of Object.keys(vals)) {
+        placementForCountry[id] = max === min ? 0 : (vals[id] - min) / (max - min);
+      }
+      for (const id of solveOrder(s)) {
+        fireEvent.click(screen.getByTestId(`place-${id}`));
+      }
+      await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
+      fireEvent.click(screen.getByTestId('submit-btn'));
+      await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument(), { timeout: 3000 });
+      fireEvent.click(screen.getByTestId('next-stage-btn'));
+    }
+
+    await waitFor(() => expect(screen.getByTestId('result-card')).toBeInTheDocument(), { timeout: 3000 });
+    const saved = JSON.parse(localStorage.getItem('worldorder_state')!);
+    expect(saved.finalScore).toBe(100);
+  });
+});
+
+describe('GamePage — resume in progress (US3, FR-017)', () => {
+  it('restores locked tokens and prior placements from saved state with previous guesses', async () => {
+    const { getPuzzleNumber, getUTCDateString } = await import('../../src/lib/puzzle');
+    // stat_1 solution: NGA,BRA,DEU,JPN,AUS. A prior guess got DEU (rank 3) correct.
+    const priorPositions = { AUS: 0, JPN: 0.25, DEU: 0.5, BRA: 0.75, NGA: 1 };
+    const savedState = {
+      puzzleNumber: getPuzzleNumber(),
+      dateUTC: getUTCDateString(),
+      status: 'in_progress',
+      activeStatIndex: 0,
+      stats: [
+        {
+          statId: 'stat_1',
+          solved: false,
+          guesses: [
+            {
+              order: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'],
+              bulls: [false, false, true, false, false],
+              positions: priorPositions,
+            },
+          ],
+        },
+        { statId: 'stat_2', solved: false, guesses: [] },
+        { statId: 'stat_3', solved: false, guesses: [] },
+      ],
+      runningScore: 0,
+      finalScore: null,
+      updatedAt: Date.now(),
+    };
+    localStorage.setItem('worldorder_state', JSON.stringify(savedState));
+
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('place-DEU')).toBeInTheDocument(), { timeout: 3000 });
+
+    // DEU was correct previously → locked; all five have restored placements.
+    expect(screen.getByTestId('place-DEU')).toHaveAttribute('data-locked', 'true');
+    for (const c of mockPuzzle.countries) {
+      expect(screen.getByTestId(`place-${c.id}`)).toHaveAttribute('data-placed', 'true');
+    }
+    // The prior feedback row is shown.
+    expect(screen.queryAllByTestId('feedback-row').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows the result card immediately if a completed state is in localStorage', async () => {
     const { getPuzzleNumber, getUTCDateString } = await import('../../src/lib/puzzle');
     const completedState = {
       puzzleNumber: getPuzzleNumber(),
       dateUTC: getUTCDateString(),
       status: 'complete',
       activeStatIndex: 2,
-      stats: [
-        { statId: 'stat_1', solved: true, guesses: [{ order: mockPuzzle.stats[0].solution, bulls: [true, true, true, true, true] }] },
-        { statId: 'stat_2', solved: true, guesses: [{ order: mockPuzzle.stats[1].solution, bulls: [true, true, true, true, true] }] },
-        { statId: 'stat_3', solved: true, guesses: [{ order: mockPuzzle.stats[2].solution, bulls: [true, true, true, true, true] }] },
-      ],
-      runningScore: 150,
-      finalScore: 150,
+      stats: mockPuzzle.stats.map((s) => ({
+        statId: s.id,
+        solved: true,
+        guesses: [{ order: s.solution, bulls: [true, true, true, true, true], positions: {} }],
+      })),
+      runningScore: 100,
+      finalScore: 100,
       updatedAt: Date.now(),
     };
     localStorage.setItem('worldorder_state', JSON.stringify(completedState));
@@ -135,607 +346,17 @@ describe('GamePage', () => {
       expect(screen.getByTestId('result-card')).toBeInTheDocument();
     }, { timeout: 3000 });
   });
+});
 
-  it('renders score display after puzzle loads', async () => {
+describe('GamePage — misc', () => {
+  it('renders the WorldOrder title after load', async () => {
     render(<GamePage />);
-    await waitFor(() => {
-      expect(screen.getByLabelText(/Running score: 0/)).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(() => expect(screen.getByText('WorldOrder')).toBeInTheDocument(), { timeout: 3000 });
   });
 
-  it('shows submit button after puzzle loads', async () => {
+  it('does not render the dev toolbar when NODE_ENV is not development', async () => {
     render(<GamePage />);
-    await waitFor(() => {
-      expect(screen.getByTestId('submit-btn')).toBeInTheDocument();
-    }, { timeout: 3000 });
-  });
-
-  it('submit button is disabled when slots are not all filled', async () => {
-    render(<GamePage />);
-    await waitFor(() => {
-      const btn = screen.getByTestId('submit-btn');
-      expect(btn).toBeInTheDocument();
-      expect(btn).toBeDisabled();
-    }, { timeout: 3000 });
-  });
-
-  it('shows retry button and error message on fetch failure', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
-    render(<GamePage />);
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Try Again/i })).toBeInTheDocument();
-    }, { timeout: 3000 });
-  });
-
-  it('submitting a ranking with all slots filled adds a feedback row', async () => {
-    // Use a puzzle where the default click order is NOT the solution
-    const wrongSolutionPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        { ...mockPuzzle.stats[0], solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'] }, // reversed
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(wrongSolutionPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    // Wait for pool chips to appear
-    await waitFor(() => {
-      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
-    }, { timeout: 3000 });
-
-    // Click each pool chip in turn to fill all 5 slots
-    for (let i = 0; i < 5; i++) {
-      const chips = screen.getAllByTestId('pool-chip');
-      fireEvent.click(chips[0]);
-    }
-
-    // Submit button should now be enabled
-    await waitFor(() => {
-      expect(screen.getByTestId('submit-btn')).not.toBeDisabled();
-    }, { timeout: 1000 });
-
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    // A feedback row with incorrect results should appear
-    await waitFor(() => {
-      const feedbackRows = screen.queryAllByTestId('feedback-row');
-      expect(feedbackRows.length).toBeGreaterThanOrEqual(1);
-    }, { timeout: 3000 });
-  });
-
-  it('renders WorldOrder title after load', async () => {
-    render(<GamePage />);
-    await waitFor(() => {
-      expect(screen.getByText('WorldOrder')).toBeInTheDocument();
-    }, { timeout: 3000 });
-  });
-
-  it('dev toolbar is not rendered when NODE_ENV is not development', async () => {
-    // In test environment NODE_ENV === 'test', so the DevPanel should never appear
-    render(<GamePage />);
-    await waitFor(() => {
-      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
-    }, { timeout: 3000 });
+    await waitFor(() => expect(screen.getByTestId('line-scale-board')).toBeInTheDocument(), { timeout: 3000 });
     expect(screen.queryByTestId('dev-toggle')).not.toBeInTheDocument();
-  });
-});
-
-describe('GamePage — handleDevDateChange state reset', () => {
-  beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockPuzzle),
-    }));
-    localStorage.clear();
-  });
-
-  it('switching dev date via handleDevDateChange resets puzzle, gameState, slotAssignments, lockedSlots, announcement, and roundCompleteEffect to initial values', async () => {
-    // This test verifies that after an incorrect guess (which adds a feedbackRow),
-    // triggering a dev date switch via the DevPanel resets everything.
-    //
-    // Since DevPanel is only rendered in development (IS_DEV), and tests run
-    // in NODE_ENV=test, we test the state reset behaviour indirectly:
-    // submit an incorrect guess, then verify feedback rows appear (state is dirty),
-    // then verify that a re-render after the puzzle changes shows a clean slate.
-    //
-    // For full coverage of handleDevDateChange we test via the GamePage
-    // internal render: after a guess is submitted, a FeedbackRow appears.
-    // handleDevDateChange clears these.
-
-    const wrongSolutionPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        { ...mockPuzzle.stats[0], solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'] },
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(wrongSolutionPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    // Wait for pool chips and fill all slots
-    await waitFor(() => {
-      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
-    }, { timeout: 3000 });
-
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-
-    await waitFor(() => {
-      expect(screen.getByTestId('submit-btn')).not.toBeDisabled();
-    }, { timeout: 1000 });
-
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    // Feedback rows appear — state is now dirty
-    await waitFor(() => {
-      expect(screen.queryAllByTestId('feedback-row').length).toBeGreaterThanOrEqual(1);
-    }, { timeout: 3000 });
-  });
-});
-
-describe('GamePage — FeedbackRow receives countries prop (US2 integration)', () => {
-  beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockPuzzle),
-    }));
-    localStorage.clear();
-  });
-
-  it('FeedbackRow components appear above RankingBoard after an incorrect guess is submitted', async () => {
-    const wrongSolutionPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        { ...mockPuzzle.stats[0], solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'] },
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(wrongSolutionPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
-    }, { timeout: 3000 });
-
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-
-    await waitFor(() => {
-      expect(screen.getByTestId('submit-btn')).not.toBeDisabled();
-    }, { timeout: 1000 });
-
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    await waitFor(() => {
-      expect(screen.queryAllByTestId('feedback-row').length).toBeGreaterThanOrEqual(1);
-    }, { timeout: 3000 });
-
-    // After the new FeedbackRow implementation, each row must render 5 feedback-cell elements
-    await waitFor(() => {
-      const cells = screen.queryAllByTestId('feedback-cell');
-      expect(cells.length).toBeGreaterThanOrEqual(5);
-    }, { timeout: 3000 });
-  });
-
-  it('all previously submitted guesses are shown stacked in chronological order after a second incorrect guess', async () => {
-    const wrongSolutionPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        { ...mockPuzzle.stats[0], solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'] },
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(wrongSolutionPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
-    }, { timeout: 3000 });
-
-    // First guess
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    await waitFor(() => {
-      expect(screen.queryAllByTestId('feedback-row').length).toBeGreaterThanOrEqual(1);
-    }, { timeout: 3000 });
-
-    // Second guess — pool chips reappear after incorrect guess (unlocked slots cleared)
-    await waitFor(() => {
-      expect(screen.getAllByTestId('pool-chip').length).toBeGreaterThanOrEqual(1);
-    }, { timeout: 3000 });
-
-    for (let i = 0; i < 5; i++) {
-      const chips = screen.queryAllByTestId('pool-chip');
-      if (chips.length === 0) break;
-      fireEvent.click(chips[0]);
-    }
-
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    // Both guesses stacked — at least 2 feedback rows
-    await waitFor(() => {
-      expect(screen.queryAllByTestId('feedback-row').length).toBeGreaterThanOrEqual(2);
-    }, { timeout: 3000 });
-  });
-
-  it('FeedbackRow receives the puzzle countries array as a prop (verified by feedback-cell country names)', async () => {
-    const wrongSolutionPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        { ...mockPuzzle.stats[0], solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'] },
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(wrongSolutionPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId('pool-chip')).toHaveLength(5);
-    }, { timeout: 3000 });
-
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    // After guess, feedback cells should contain country names from puzzle.countries
-    await waitFor(() => {
-      const cells = screen.queryAllByTestId('feedback-cell');
-      expect(cells.length).toBeGreaterThanOrEqual(5);
-    }, { timeout: 3000 });
-
-    // At least one feedback-cell aria-label should mention a country name from the puzzle
-    const cells = screen.queryAllByTestId('feedback-cell');
-    const anyContainsCountry = cells.some(cell => {
-      const label = cell.getAttribute('aria-label') ?? '';
-      return mockPuzzle.countries.some(c => label.includes(c.name));
-    });
-    expect(anyContainsCountry).toBe(true);
-  });
-});
-
-describe('GamePage — slot restoration and correct guess paths (coverage)', () => {
-  beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockPuzzle),
-    }));
-    localStorage.clear();
-  });
-
-  it('restores locked slots and slot assignments from saved in-progress state with previous guesses', async () => {
-    const { getPuzzleNumber, getUTCDateString } = await import('../../src/lib/puzzle');
-    const inProgressState = {
-      puzzleNumber: getPuzzleNumber(),
-      dateUTC: getUTCDateString(),
-      status: 'in_progress',
-      activeStatIndex: 0,
-      stats: [
-        {
-          statId: 'stat_1',
-          solved: false,
-          guesses: [{
-            order: ['AUS', 'BRA', 'DEU', 'JPN', 'NGA'],
-            bulls: [false, true, true, false, false], // BRA and DEU correct at positions 1,2
-          }],
-        },
-        { statId: 'stat_2', solved: false, guesses: [] },
-        { statId: 'stat_3', solved: false, guesses: [] },
-      ],
-      runningScore: 0,
-      finalScore: null,
-      updatedAt: Date.now(),
-    };
-    localStorage.setItem('worldorder_state', JSON.stringify(inProgressState));
-
-    render(<GamePage />);
-
-    // Feedback row from previous guess should be visible
-    await waitFor(() => {
-      expect(screen.getByTestId('feedback-row')).toBeInTheDocument();
-    }, { timeout: 3000 });
-
-    // Pool should have only 3 chips (NGA, JPN, AUS — BRA and DEU locked in slots)
-    await waitFor(() => {
-      expect(screen.queryAllByTestId('pool-chip')).toHaveLength(3);
-    }, { timeout: 3000 });
-  });
-
-  it('submitting correct guesses for all 3 stats completes the game and shows result card', async () => {
-    // Use a puzzle where all 3 stats share the same solution as the default click order
-    const easyPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        { ...mockPuzzle.stats[0], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
-        { ...mockPuzzle.stats[1], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
-        { ...mockPuzzle.stats[2], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(easyPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    // Fill all 5 pool chips for stat 1
-    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-
-    // Submit stat 1 correct, then advance manually
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Next stage'), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('next-stage-btn'));
-
-    // Fill and submit stat 2, then advance manually
-    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Next stage'), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('next-stage-btn'));
-
-    // Fill and submit stat 3, then show recap manually
-    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Show Recap'), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('next-stage-btn'));
-
-    // Game complete — result card appears
-    await waitFor(() => {
-      expect(screen.getByTestId('result-card')).toBeInTheDocument();
-    }, { timeout: 3000 });
-  });
-
-  it('shows Next stage after solving a non-final stage and does not auto-advance', async () => {
-    const easyPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        { ...mockPuzzle.stats[0], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(easyPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    await waitFor(() => {
-      expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Next stage');
-      expect(screen.getByText('Round 1 of 3')).toBeInTheDocument();
-    }, { timeout: 3000 });
-  });
-
-  it('shows Show Recap after solving the third stage and does not auto-complete', async () => {
-    const easyPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        { ...mockPuzzle.stats[0], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
-        { ...mockPuzzle.stats[1], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
-        { ...mockPuzzle.stats[2], solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'] },
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(easyPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    for (let stage = 0; stage < 3; stage++) {
-      await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-      for (let i = 0; i < 5; i++) {
-        fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-      }
-      await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-      fireEvent.click(screen.getByTestId('submit-btn'));
-
-      if (stage < 2) {
-        await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Next stage'), { timeout: 1000 });
-        fireEvent.click(screen.getByTestId('next-stage-btn'));
-      }
-    }
-
-    await waitFor(() => {
-      expect(screen.getByTestId('next-stage-btn')).toHaveTextContent('Show Recap');
-      expect(screen.queryByTestId('result-card')).not.toBeInTheDocument();
-    }, { timeout: 3000 });
-  });
-});
-
-// ── valueMap in FeedbackRow (feature 007-reveal-correct-values, US3) ──────────
-
-describe('GamePage — valueMap passed to FeedbackRow after a partially correct guess', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('shows a value string in a feedback row for a correct position after a wrong guess', async () => {
-    // Puzzle where stat_1 solution is ['AUS', 'BRA', 'DEU', 'JPN', 'NGA']
-    // but clicking chips places NGA first → position 0 is incorrect, AUS is at position 4 (incorrect).
-    // We use a reversed solution so the first chip click (NGA) is wrong but position 4 (AUS) might be correct.
-    // Simpler: use solution where DEU at position 2 is always placed there (click order: NGA,BRA,DEU → DEU=pos2)
-    const partialPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        {
-          ...mockPuzzle.stats[0],
-          // Correct solution has DEU at position 2 (matches click order NGA,BRA,DEU,JPN,AUS)
-          solution: ['AUS', 'JPN', 'DEU', 'BRA', 'NGA'],
-          unit: 'km²',
-          values: { NGA: 923768, BRA: 8515767, DEU: 357114, JPN: 377975, AUS: 7692024 },
-        },
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(partialPuzzle),
-    }));
-
-    render(<GamePage />);
-    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-
-    // Click all 5 chips to fill slots: NGA, BRA, DEU, JPN, AUS (order of chips)
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-
-    // Submit — DEU is at position 2 in both our order and the solution → it's correct
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    // DEU's value should appear at least once in the DOM (in a locked slot and/or a feedback row cell)
-    await waitFor(() => {
-      expect(screen.getAllByText('357,114 km²').length).toBeGreaterThanOrEqual(1);
-    }, { timeout: 3000 });
-  });
-});
-
-// ── slotValues prop passed to RankingBoard (feature 007-reveal-correct-values) ─
-
-describe('GamePage — slotValues passed to RankingBoard after correct guess', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('shows formatted stat value text in DOM after a correct guess locks a slot', async () => {
-    // Use a puzzle where stat_1 solution matches click order: NGA, BRA, DEU, JPN, AUS
-    const easyPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        {
-          ...mockPuzzle.stats[0],
-          solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'],
-          unit: 'people',
-          values: { NGA: 218541212, BRA: 215313498, DEU: 84316622, JPN: 125124989, AUS: 26461166 },
-        },
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(easyPuzzle),
-    }));
-
-    render(<GamePage />);
-
-    // Wait for pool chips to appear
-    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-
-    // Click all 5 chips to fill slots in order (NGA, BRA, DEU, JPN, AUS)
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-
-    // Submit — all 5 slots should lock (correct answer)
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    // After the correct submit, locked slots should display formatted values
-    await waitFor(() => {
-      // Nigeria's population value should be visible somewhere in the DOM
-      expect(screen.getAllByText('218,541,212 people').length).toBeGreaterThanOrEqual(1);
-    }, { timeout: 3000 });
-  });
-
-  it('does not show value text before any guess is submitted', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockPuzzle),
-    }));
-
-    render(<GamePage />);
-    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-
-    // No guesses yet — no value text should appear
-    expect(screen.queryByText(/218,541,212/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/people/)).not.toBeInTheDocument();
-  });
-
-  it('shows formatted value on locked slot after solving stat, and values persist when stat is solved', async () => {
-    // Use all the same solution for all stats to easily solve stat_1
-    const easyPuzzle = {
-      ...mockPuzzle,
-      stats: [
-        {
-          ...mockPuzzle.stats[0],
-          solution: ['NGA', 'BRA', 'DEU', 'JPN', 'AUS'],
-          unit: 'people',
-          values: { NGA: 218541212, BRA: 215313498, DEU: 84316622, JPN: 125124989, AUS: 26461166 },
-        },
-        ...mockPuzzle.stats.slice(1),
-      ],
-    };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(easyPuzzle),
-    }));
-
-    render(<GamePage />);
-    await waitFor(() => expect(screen.getAllByTestId('pool-chip')).toHaveLength(5), { timeout: 3000 });
-
-    // Place all 5 chips
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(screen.getAllByTestId('pool-chip')[0]);
-    }
-
-    // Submit correct answer — stat_1 is solved
-    await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
-    fireEvent.click(screen.getByTestId('submit-btn'));
-
-    // All 5 values should be visible after solve (stat solved = all locked + disabled)
-    await waitFor(() => {
-      expect(screen.getAllByText('218,541,212 people').length).toBeGreaterThanOrEqual(1);
-    }, { timeout: 3000 });
   });
 });

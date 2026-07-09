@@ -4,6 +4,8 @@ import {
   scoreForStat,
   totalScore,
   buildShareText,
+  accuracyFactor,
+  ACCURACY_FLOOR,
   ROUND_MAX,
   DECAY_BASE,
   PERFECT_BONUS,
@@ -242,5 +244,113 @@ describe('buildShareText', () => {
     const score = parseInt(match![1]);
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(100);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Proximity-aware scoring — feature 010 (penalty × proximity)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('accuracyFactor (feature 010)', () => {
+  it('ACCURACY_FLOOR is 0.8', () => {
+    expect(ACCURACY_FLOOR).toBe(0.8);
+  });
+
+  it('maps accuracy 0 → ACCURACY_FLOOR (0.8)', () => {
+    expect(accuracyFactor(0)).toBeCloseTo(0.8, 10);
+  });
+
+  it('maps accuracy 1 → 1.0 (full credit)', () => {
+    expect(accuracyFactor(1)).toBeCloseTo(1.0, 10);
+  });
+
+  it('maps accuracy 0.5 → 0.9 (linear midpoint)', () => {
+    expect(accuracyFactor(0.5)).toBeCloseTo(0.9, 10);
+  });
+
+  it('is monotonically non-decreasing in accuracy', () => {
+    for (let a = 0; a < 1; a += 0.1) {
+      expect(accuracyFactor(a + 0.1)).toBeGreaterThanOrEqual(accuracyFactor(a));
+    }
+  });
+});
+
+describe('scoreForStat with proximity accuracy (feature 010)', () => {
+  it('a perfect first-try solve (0 wrong, accuracy 1) still earns the full 33', () => {
+    expect(scoreForStat(makeSession(0), 1)).toBe(33);
+  });
+
+  it('a first-try solve with mediocre placement (accuracy 0.5) scores below 33', () => {
+    const s = scoreForStat(makeSession(0), 0.5);
+    // 33 * 0.9 = 29.7 → 30
+    expect(s).toBe(Math.round(33 * 0.9));
+    expect(s).toBeLessThan(33);
+  });
+
+  it('defaults to accuracy-neutral (A=1) when accuracy is omitted (backwards-compat)', () => {
+    for (let n = 0; n <= 6; n++) {
+      expect(scoreForStat(makeSession(n))).toBe(scoreForRound(n));
+    }
+  });
+
+  it('closer placement never scores lower for the same wrong-guess count', () => {
+    for (let n = 0; n <= 4; n++) {
+      const near = scoreForStat(makeSession(n), 0.95);
+      const far = scoreForStat(makeSession(n), 0.3);
+      expect(near).toBeGreaterThanOrEqual(far);
+    }
+  });
+
+  it('fewer wrong guesses never scores lower for the same accuracy', () => {
+    for (let a = 0; a <= 1; a += 0.25) {
+      for (let n = 0; n <= 4; n++) {
+        expect(scoreForStat(makeSession(n), a)).toBeGreaterThanOrEqual(
+          scoreForStat(makeSession(n + 1), a),
+        );
+      }
+    }
+  });
+
+  it('is always an integer within [0, 33] for any wrong-guess/accuracy combination', () => {
+    for (let n = 0; n <= 12; n++) {
+      for (let a = 0; a <= 1; a += 0.2) {
+        const s = scoreForStat(makeSession(n), a);
+        expect(Number.isInteger(s)).toBe(true);
+        expect(s).toBeGreaterThanOrEqual(0);
+        expect(s).toBeLessThanOrEqual(ROUND_MAX);
+      }
+    }
+  });
+});
+
+describe('totalScore with proximity accuracies (feature 010)', () => {
+  it('three perfect solves (0 wrong, accuracy 1) yield 100 including the perfect bonus', () => {
+    const sessions = [makeSession(0), makeSession(0), makeSession(0)];
+    expect(totalScore(sessions, [1, 1, 1])).toBe(100);
+  });
+
+  it('a perfect-order game with imperfect placement does NOT get the perfect bonus', () => {
+    const sessions = [makeSession(0), makeSession(0), makeSession(0)];
+    // Not all stats reach the full 33, so no +1 bonus and total < 100.
+    const score = totalScore(sessions, [1, 1, 0.5]);
+    expect(score).toBeLessThan(100);
+  });
+
+  it('defaults to accuracy-neutral when accuracies omitted (identical to legacy behavior)', () => {
+    const sessions = [makeSession(1), makeSession(0), makeSession(2)];
+    expect(totalScore(sessions)).toBe(
+      scoreForRound(1) + scoreForRound(0) + scoreForRound(2),
+    );
+  });
+
+  it('stays within [0, 100] for any combination of wrong guesses and accuracies', () => {
+    for (const acc of [0, 0.5, 1]) {
+      for (let n = 0; n <= 5; n++) {
+        const sessions = [makeSession(n), makeSession(n), makeSession(n)];
+        const score = totalScore(sessions, [acc, acc, acc]);
+        expect(score).toBeGreaterThanOrEqual(0);
+        expect(score).toBeLessThanOrEqual(100);
+      }
+    }
   });
 });

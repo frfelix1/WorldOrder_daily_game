@@ -5,10 +5,11 @@ import type { PuzzleFile, GameState, Guess, StatSession } from '../types';
 import { getPuzzleNumberForDate, getUTCDateString } from '../lib/puzzle';
 import { loadGameState, saveGameState, loadPlayerStats, savePlayerStats } from '../lib/game-state';
 import { totalScore } from '../lib/scoring';
+import { deriveOrder, placementAccuracy, trueFractions } from '../lib/line-scale';
 import { formatStatValue } from '../lib/formatting';
 import { ScoreDisplay } from '../components/game/ScoreDisplay';
 import { StatPanel } from '../components/game/StatPanel';
-import { RankingBoard } from '../components/game/RankingBoard';
+import { LineScaleBoard } from '../components/game/LineScaleBoard';
 import { FeedbackRow } from '../components/game/FeedbackRow';
 import { LiveRegion } from '../components/ui/LiveRegion';
 import { ResultCard } from '../components/game/ResultCard';
@@ -16,8 +17,8 @@ import { DevPanel } from '../components/dev/DevPanel';
 
 type PageStatus = 'loading' | 'error' | 'playing' | 'complete';
 
-const EMPTY_SLOTS: (string | null)[] = [null, null, null, null, null];
-const EMPTY_LOCKS: boolean[] = [false, false, false, false, false];
+const EMPTY_POSITIONS: Record<string, number> = {};
+const EMPTY_LOCKS: Record<string, boolean> = {};
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 const MS_PER_DAY = 86_400_000;
@@ -30,27 +31,70 @@ function buildInitialSessions(puzzle: PuzzleFile): StatSession[] {
   }));
 }
 
-function computeBulls(submitted: string[], solution: string[]): boolean[] {
-  return submitted.map((id, i) => id === solution[i]);
+/**
+ * Compute per-token correctness for a submitted left-to-right order against the
+ * target order. bulls[i] = true when the token at left-to-right position i is the
+ * country that belongs at that position.
+ */
+function computeBulls(order: string[], target: string[]): boolean[] {
+  return order.map((id, i) => id === target[i]);
 }
 
-/** Accumulate which positions have been correct across all guesses for a stat. */
-function computeLockedSlots(guesses: Guess[]): boolean[] {
-  const locked = [false, false, false, false, false];
+/**
+ * The correct left-to-right order for a stat: country IDs sorted ascending by
+ * value (least on the left, most on the right — the value line's orientation).
+ * This is direction-agnostic: it does not depend on the stat's ranking direction,
+ * only on the raw values. Ties are broken deterministically by country ID.
+ */
+function targetOrderForStat(
+  countryIds: string[],
+  values: Record<string, number> | undefined,
+): string[] {
+  if (!values) return [...countryIds];
+  return countryIds.slice().sort((a, b) => {
+    const diff = (values[a] ?? 0) - (values[b] ?? 0);
+    if (diff !== 0) return diff;
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+}
+
+/**
+ * Accumulate the set of countries that have been in their correct relative
+ * position across all guesses for a stat. These tokens are "locked".
+ */
+function computeLockedCountries(guesses: Guess[]): Record<string, boolean> {
+  const locked: Record<string, boolean> = {};
   for (const guess of guesses) {
     guess.bulls.forEach((b, i) => {
-      if (b) locked[i] = true;
+      if (b) locked[guess.order[i]] = true;
     });
   }
   return locked;
+}
+
+/**
+ * Placement accuracy of a stat session's final (solving) guess, using the
+ * puzzle's per-country values for that stat. Returns 1 (accuracy-neutral) when
+ * positions or values are unavailable (backwards-compatibility).
+ */
+function accuracyForSession(session: StatSession, puzzle: PuzzleFile): number {
+  const stat = puzzle.stats.find((s) => s.id === session.statId);
+  const lastGuess = session.guesses[session.guesses.length - 1];
+  if (!stat?.values || !lastGuess?.positions) return 1;
+  return placementAccuracy(lastGuess.positions, stat.values);
+}
+
+/** Per-stat accuracies aligned by index with gameState.stats. */
+function accuraciesFor(stats: StatSession[], puzzle: PuzzleFile): number[] {
+  return stats.map((s) => (s.solved ? accuracyForSession(s, puzzle) : 1));
 }
 
 export default function GamePage() {
   const [puzzle, setPuzzle] = useState<PuzzleFile | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [pageStatus, setPageStatus] = useState<PageStatus>('loading');
-  const [slotAssignments, setSlotAssignments] = useState<(string | null)[]>([...EMPTY_SLOTS]);
-  const [lockedSlots, setLockedSlots] = useState<boolean[]>([...EMPTY_LOCKS]);
+  const [positions, setPositions] = useState<Record<string, number>>({ ...EMPTY_POSITIONS });
+  const [locked, setLocked] = useState<Record<string, boolean>>({ ...EMPTY_LOCKS });
   const [announcement, setAnnouncement] = useState('');
 
   // Computed once per session at mount; refreshes automatically at UTC midnight
@@ -66,13 +110,6 @@ export default function GamePage() {
   // Re-schedules the timer after each rollover so it fires again the next midnight.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [today]);
-  /**
-   * Records which stat index the currently locked slots belong to.
-   * Needed because after solving a stat, activeStatIndex advances to the next
-   * stat while locked slots may still be visible during the 800ms animation.
-   */
-  const [lockedStatIndex, setLockedStatIndex] = useState<number>(0);
-
   // Dev seed override — only active in development
   const [devDate, setDevDate] = useState<string | null>(null);
   const effectiveDate = (IS_DEV && devDate) ? devDate : today;
@@ -169,17 +206,17 @@ export default function GamePage() {
         const lastStatIndex = saved.activeStatIndex;
         const lastStat = saved.stats[lastStatIndex];
         if (lastStat.guesses.length > 0) {
-          const locked = computeLockedSlots(lastStat.guesses);
-          const lastOrder = lastStat.guesses[lastStat.guesses.length - 1].order;
-          const restored: (string | null)[] = lastOrder.map((id, i) =>
-            locked[i] ? id : null,
-          );
-          setLockedSlots(locked);
-          setSlotAssignments(restored);
-          setLockedStatIndex(lastStatIndex);
+          const lockedCountries = computeLockedCountries(lastStat.guesses);
+          const lastGuess = lastStat.guesses[lastStat.guesses.length - 1];
+          // Restore prior placements (locked tokens stay fixed; the rest resume
+          // where the player left off). Falls back to empty for legacy guesses
+          // that predate line-scale positions.
+          const restored: Record<string, number> = { ...(lastGuess.positions ?? {}) };
+          setLocked(lockedCountries);
+          setPositions(restored);
         } else {
-          setSlotAssignments([...EMPTY_SLOTS]);
-          setLockedSlots([...EMPTY_LOCKS]);
+          setPositions({ ...EMPTY_POSITIONS });
+          setLocked({ ...EMPTY_LOCKS });
         }
         setPageStatus('playing');
       }
@@ -195,8 +232,8 @@ export default function GamePage() {
         updatedAt: Date.now(),
       };
       setGameState(newState);
-      setSlotAssignments([...EMPTY_SLOTS]);
-      setLockedSlots([...EMPTY_LOCKS]);
+      setPositions({ ...EMPTY_POSITIONS });
+      setLocked({ ...EMPTY_LOCKS });
       saveGameState(newState);
       setPageStatus('playing');
     }
@@ -207,8 +244,8 @@ export default function GamePage() {
   const handleDevDateChange = useCallback((date: string) => {
     setPuzzle(null);
     setGameState(null);
-    setSlotAssignments([...EMPTY_SLOTS]);
-    setLockedSlots([...EMPTY_LOCKS]);
+    setPositions({ ...EMPTY_POSITIONS });
+    setLocked({ ...EMPTY_LOCKS });
     setAnnouncement('');
     setRoundCompleteEffect(false);
     setDevDate(date === today ? null : date);
@@ -216,21 +253,26 @@ export default function GamePage() {
 
   function handleSubmit() {
     if (!puzzle || !gameState || pageStatus !== 'playing') return;
-    if (slotAssignments.some((s) => s === null)) return;
+    // All five countries must be placed on the line before submitting.
+    if (puzzle.countries.some((c) => positions[c.id] == null)) return;
 
     const statIndex = gameState.activeStatIndex;
     const stat = puzzle.stats[statIndex];
-    const submitted = slotAssignments as string[];
-    const bulls = computeBulls(submitted, stat.solution);
+    const order = deriveOrder(positions);
+    const target = targetOrderForStat(
+      puzzle.countries.map((c) => c.id),
+      stat.values,
+    );
+    const bulls = computeBulls(order, target);
     const allBulls = bulls.every(Boolean);
 
-    const newGuess: Guess = { order: [...submitted], bulls };
+    const newGuess: Guess = { order, bulls, positions: { ...positions } };
     const updatedStats = gameState.stats.map((s, i) => {
       if (i !== statIndex) return s;
       return { ...s, solved: allBulls, guesses: [...s.guesses, newGuess] };
     });
 
-    const newRunningScore = totalScore(updatedStats);
+    const newRunningScore = totalScore(updatedStats, accuraciesFor(updatedStats, puzzle));
 
     const isLastStat = statIndex === 2;
     const isComplete = allBulls && isLastStat;
@@ -248,22 +290,13 @@ export default function GamePage() {
     setGameState(updatedState);
     saveGameState(updatedState);
 
-    // Lock correct slots; return incorrect ones to pool
-    const newLockedSlots = [...lockedSlots];
-    const newSlotAssignments = [...slotAssignments] as (string | null)[];
-    bulls.forEach((isCorrect, i) => {
-      if (isCorrect) {
-        newLockedSlots[i] = true;
-      } else {
-        newSlotAssignments[i] = null;
-      }
+    // Lock correctly-positioned countries; keep all placements on the line so the
+    // player can nudge the remaining (unlocked) tokens for the next guess.
+    const newLocked: Record<string, boolean> = { ...locked };
+    order.forEach((countryId, i) => {
+      if (bulls[i]) newLocked[countryId] = true;
     });
-    // Record which stat these locked slots belong to, so slotValues can be computed
-    // correctly even during the 800ms animation window after a stat is solved and
-    // activeStatIndex has already advanced to the next stat.
-    setLockedStatIndex(statIndex);
-    setLockedSlots(newLockedSlots);
-    setSlotAssignments(newSlotAssignments);
+    setLocked(newLocked);
 
     if (allBulls) {
       setAnnouncement(isComplete ? 'Final stage solved!' : `Stat ${statIndex + 1} solved!`);
@@ -295,9 +328,8 @@ export default function GamePage() {
 
     setGameState(nextState);
     saveGameState(nextState);
-    setSlotAssignments([...EMPTY_SLOTS]);
-    setLockedSlots([...EMPTY_LOCKS]);
-    setLockedStatIndex(nextStatIndex);
+    setPositions({ ...EMPTY_POSITIONS });
+    setLocked({ ...EMPTY_LOCKS });
     setAnnouncement('');
     setRoundCompleteEffect(false);
   }
@@ -456,23 +488,17 @@ export default function GamePage() {
   const activeStatIndex = gameState.activeStatIndex;
   const activeStat = puzzle.stats[activeStatIndex] ?? null;
   const activeSession = gameState.stats[activeStatIndex];
-  const allSlotsFilled = slotAssignments.every((s) => s !== null);
+  const allPlaced = puzzle.countries.every((c) => positions[c.id] != null);
 
   /**
-   * The stat whose values should appear on locked slots.
-   * Uses lockedStatIndex (not activeStatIndex) so that during the 800ms animation
-   * after solving a stat, the correct values remain visible even though
-   * activeStatIndex has already advanced to the next stat.
+   * Value-line endpoints for the active stat: the smallest and largest values
+   * among the five puzzle countries. Falls back to [0, 1] if values are missing
+   * (legacy puzzles pre-dating feature 007).
    */
-  const statForLockedValues = puzzle.stats[lockedStatIndex] ?? null;
-
-  /** Pre-formatted value strings for each slot position; null if slot is unlocked or has no value. */
-  const slotValues: (string | null)[] = slotAssignments.map((countryId, i) => {
-    if (!lockedSlots[i] || !countryId || !statForLockedValues) return null;
-    const rawValue = statForLockedValues.values?.[countryId];
-    if (rawValue == null || !statForLockedValues.unit) return null;
-    return formatStatValue(rawValue, statForLockedValues.unit);
-  });
+  const activeValues = activeStat?.values ?? null;
+  const activeUnit = activeStat?.unit ?? '';
+  const lineMin = activeValues ? Math.min(...Object.values(activeValues)) : 0;
+  const lineMax = activeValues ? Math.max(...Object.values(activeValues)) : 1;
 
   /** Pre-formatted value map for all 5 countries in the active stat (used by FeedbackRow). */
   const activeValueMap: Record<string, string> = (() => {
@@ -665,18 +691,32 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* ── Ranking board ── */}
+        {/* ── Line-scale board ── */}
         <div
           className="animate-slide-up-fade"
-          style={{ animationDelay: '200ms' }}
+          style={{
+            animationDelay: '200ms',
+            // Break out of the --board-max column to a wider, centered width.
+            // Uses negative margin centering instead of transform to avoid
+            // creating a containing block that breaks position:fixed in DragOverlay.
+            width: 'var(--line-board-width)',
+            marginLeft: 'calc(50% - var(--line-board-width) / 2)',
+          }}
         >
-          <RankingBoard
+          <LineScaleBoard
             countries={puzzle.countries}
-            slotAssignments={slotAssignments}
-            lockedSlots={lockedSlots}
-            onSlotsChange={setSlotAssignments}
+            min={lineMin}
+            max={lineMax}
+            unit={activeUnit}
+            positions={positions}
+            locked={locked}
+            onPositionsChange={setPositions}
             disabled={activeSession?.solved ?? false}
-            slotValues={slotValues}
+            correctPositions={
+              activeSession?.solved && activeValues
+                ? trueFractions(activeValues)
+                : undefined
+            }
           />
         </div>
 
@@ -686,27 +726,27 @@ export default function GamePage() {
             <button
               data-testid="submit-btn"
               onClick={handleSubmit}
-              disabled={!allSlotsFilled}
+              disabled={!allPlaced}
               className="w-full py-4 font-bold rounded-2xl transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 uppercase tracking-[0.2em] text-sm disabled:cursor-not-allowed"
               style={{
-                background: allSlotsFilled
+                background: allPlaced
                   ? 'linear-gradient(135deg, var(--gold-dim) 0%, var(--gold) 50%, var(--gold-bright) 100%)'
                   : 'var(--surface-2)',
-                color: allSlotsFilled ? '#000' : 'var(--text-muted)',
+                color: allPlaced ? '#000' : 'var(--text-muted)',
                 fontFamily: 'var(--font-cinzel)',
-                boxShadow: allSlotsFilled
+                boxShadow: allPlaced
                   ? '0 0 24px rgba(232,197,71,0.35), 0 4px 16px rgba(0,0,0,0.4)'
                   : 'none',
-                border: allSlotsFilled
+                border: allPlaced
                   ? '1px solid rgba(245,215,110,0.4)'
                   : '1px solid var(--border)',
                 transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-                opacity: allSlotsFilled ? 1 : 0.5,
+                opacity: allPlaced ? 1 : 0.5,
                 focusRingColor: 'var(--gold)',
                 focusRingOffsetColor: 'var(--bg)',
               } as React.CSSProperties}
             >
-              Submit Ranking
+              Submit Placement
             </button>
           </div>
         )}
