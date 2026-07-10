@@ -607,17 +607,17 @@ export default function GamePage() {
 
         {/* ── Header ── */}
         <header
-          className="flex items-center justify-between pb-4 animate-slide-up-fade"
+          className="flex flex-col items-center pb-4 animate-slide-up-fade"
           style={{ borderBottom: '1px solid rgba(232,197,71,0.08)' }}
         >
           <h1
             className="text-shimmer-gold tracking-[0.25em]"
-            style={{ fontFamily: 'var(--font-cinzel)', fontWeight: 900, fontSize: 'var(--fs-brand)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1 }}
+            style={{ fontFamily: 'var(--font-cinzel)', fontWeight: 900, fontSize: 'clamp(1.2rem, 5vw, var(--fs-brand))', whiteSpace: 'nowrap' }}
           >
             WorldOrder
           </h1>
           <div
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold tracking-[0.15em] uppercase"
+            className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold tracking-[0.15em] uppercase mt-2"
             style={{
               border: '1px solid rgba(232,197,71,0.2)',
               color: 'var(--gold)',
