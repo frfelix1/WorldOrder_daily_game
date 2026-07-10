@@ -435,7 +435,18 @@ export function LineScaleBoard({
     return positions[countryId] ?? 0;
   }
 
-  function fractionAfterDelta(countryId: string, deltaX: number): number {
+  function fractionAfterDelta(countryId: string, deltaX: number, activeRect?: { left: number; width: number } | null): number {
+    const isUnplaced = positions[countryId] == null;
+    if (isUnplaced && activeRect) {
+      // For unplaced tokens, compute fraction from the dragged element's
+      // current center X relative to the track, rather than using delta from
+      // the staging tray origin which has no meaningful relation to the track.
+      const trackRect = trackRef.current?.getBoundingClientRect();
+      if (trackRect && trackRect.width > 0) {
+        const centerX = activeRect.left + activeRect.width / 2;
+        return clamp01((centerX - trackRect.left) / trackRect.width);
+      }
+    }
     const start = startFractionFor(countryId);
     return clamp01(start + deltaX / trackWidth());
   }
@@ -450,7 +461,8 @@ export function LineScaleBoard({
   function handleDragMove({ active, delta }: DragMoveEvent) {
     const countryId = countryIdFromToken(active.id as string);
     if (disabled || locked[countryId]) return;
-    setDragFraction(fractionAfterDelta(countryId, delta.x));
+    const activeRect = active.rect.current.translated ?? null;
+    setDragFraction(fractionAfterDelta(countryId, delta.x, activeRect));
   }
 
   function handleDragEnd({ active, delta }: DragEndEvent) {
@@ -458,7 +470,8 @@ export function LineScaleBoard({
     setActiveCountryId(null);
     setDragFraction(null);
     if (disabled || locked[countryId]) return;
-    const next = { ...positions, [countryId]: fractionAfterDelta(countryId, delta.x) };
+    const activeRect = active.rect.current.translated ?? null;
+    const next = { ...positions, [countryId]: fractionAfterDelta(countryId, delta.x, activeRect) };
     onPositionsChange(next);
   }
 
