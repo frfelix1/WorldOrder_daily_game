@@ -180,5 +180,5 @@ export function buildShareText(
     return `Stat ${i + 1}: ${rows.join(' / ')}`;
   });
 
-  return [header, '', ...statLines].join('\n');
+  return [header, '', ...statLines, '', 'https://world-order-daily-game.vercel.app'].join('\n');
 }
