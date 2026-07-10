@@ -4,8 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import type { PuzzleFile, GameState, Guess, StatSession } from '../types';
 import { getPuzzleNumberForDate, getUTCDateString } from '../lib/puzzle';
 import { loadGameState, saveGameState, loadPlayerStats, savePlayerStats } from '../lib/game-state';
-import { totalScore } from '../lib/scoring';
-import { deriveOrder, placementAccuracy, trueFractions } from '../lib/line-scale';
+import { scoreForStat, totalScore } from '../lib/scoring';
+import { deriveOrder, trueFractions } from '../lib/line-scale';
 import { formatStatValue } from '../lib/formatting';
 import { ScoreDisplay } from '../components/game/ScoreDisplay';
 import { StatPanel } from '../components/game/StatPanel';
@@ -73,20 +73,19 @@ function computeLockedCountries(guesses: Guess[]): Record<string, boolean> {
 }
 
 /**
- * Placement accuracy of a stat session's final (solving) guess, using the
- * puzzle's per-country values for that stat. Returns 1 (accuracy-neutral) when
- * positions or values are unavailable (backwards-compatibility).
+ * Compute the running total score from current stat sessions using the new
+ * reward-based scoring model (ordering + distance + attempt decay).
  */
-function accuracyForSession(session: StatSession, puzzle: PuzzleFile): number {
-  const stat = puzzle.stats.find((s) => s.id === session.statId);
-  const lastGuess = session.guesses[session.guesses.length - 1];
-  if (!stat?.values || !lastGuess?.positions) return 1;
-  return placementAccuracy(lastGuess.positions, stat.values);
-}
-
-/** Per-stat accuracies aligned by index with gameState.stats. */
-function accuraciesFor(stats: StatSession[], puzzle: PuzzleFile): number[] {
-  return stats.map((s) => (s.solved ? accuracyForSession(s, puzzle) : 1));
+function computeTotalScore(stats: StatSession[], puzzle: PuzzleFile): number {
+  const statScores = stats.map((session) => {
+    if (!session.solved || session.guesses.length === 0) return 0;
+    const stat = puzzle.stats.find((s) => s.id === session.statId);
+    if (!stat?.values) return 0;
+    const lastGuess = session.guesses[session.guesses.length - 1];
+    const positions = lastGuess.positions ?? {};
+    return scoreForStat(session, positions, stat.values);
+  });
+  return totalScore(statScores);
 }
 
 export default function GamePage() {
@@ -130,7 +129,7 @@ export default function GamePage() {
 
     setGameState(completedState);
     saveGameState(completedState);
-    setAnnouncement(`Game complete! Your score is ${finalScore} out of 100 points.`);
+    setAnnouncement(`Game complete! Your score is ${finalScore} out of 1000 points.`);
     setPageStatus('complete');
 
     const playerStats = loadPlayerStats();
@@ -272,7 +271,7 @@ export default function GamePage() {
       return { ...s, solved: allBulls, guesses: [...s.guesses, newGuess] };
     });
 
-    const newRunningScore = totalScore(updatedStats, accuraciesFor(updatedStats, puzzle));
+    const newRunningScore = computeTotalScore(updatedStats, puzzle);
 
     const isLastStat = statIndex === 2;
     const isComplete = allBulls && isLastStat;

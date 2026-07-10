@@ -252,7 +252,7 @@ describe('GamePage — solve, advance, complete (US3)', () => {
     }, { timeout: 3000 });
   });
 
-  it('a perfect first-try solve of all three stats yields a score of 100', async () => {
+  it('a perfect first-try solve of all three stats yields a score of 1000', async () => {
     render(<GamePage />);
     await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
 
@@ -276,7 +276,7 @@ describe('GamePage — solve, advance, complete (US3)', () => {
 
     await waitFor(() => expect(screen.getByTestId('result-card')).toBeInTheDocument(), { timeout: 3000 });
     const saved = JSON.parse(localStorage.getItem('worldorder_state')!);
-    expect(saved.finalScore).toBe(100);
+    expect(saved.finalScore).toBe(1000);
   });
 });
 

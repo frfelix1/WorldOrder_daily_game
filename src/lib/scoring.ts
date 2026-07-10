@@ -1,97 +1,166 @@
 import type { StatSession } from '../types';
+import { deriveOrder, trueFractions } from './line-scale';
 
-/** Maximum points awarded for a single round (stat) with zero wrong guesses. */
-export const ROUND_MAX = 33;
+// ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
 
-/** Geometric decay rate applied per wrong guess. */
-export const DECAY_BASE = 0.65;
+/** Maximum points per stat (ordering + distance). */
+export const STAT_MAX = 333;
 
-/** Bonus added to the total when all three rounds achieve ROUND_MAX. */
+/** Maximum achievable total game score (3 × STAT_MAX + PERFECT_BONUS). */
+export const GAME_MAX = 1000;
+
+/** Maximum points from ordering component per stat. */
+export const ORDERING_MAX = 133;
+
+/** Maximum points from distance component per stat. */
+export const DISTANCE_MAX = 200;
+
+/** Placement tolerance — error ≤ this yields full node score. */
+export const TOLERANCE = 0.05;
+
+/** Geometric decay per wrong guess applied to stat score. */
+export const ATTEMPT_DECAY = 0.7;
+
+/** Bonus awarded when all 3 stats achieve exactly STAT_MAX. */
 export const PERFECT_BONUS = 1;
 
-/** Maximum achievable total game score (3 × ROUND_MAX + PERFECT_BONUS). */
-export const GAME_MAX = 100;
+// ─────────────────────────────────────────────────────────────────────────────
+// Foundational scoring functions
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Minimum share of the penalty-adjusted base score retained on a solve,
- * regardless of placement accuracy (feature 010). A solved stat always keeps
- * at least this fraction of its base; perfect placement earns the full base.
- */
-export const ACCURACY_FLOOR = 0.8;
-
-/**
- * Maps placement accuracy A ∈ [0, 1] to a multiplicative factor in
- * [ACCURACY_FLOOR, 1]. A = 0 → ACCURACY_FLOOR, A = 1 → 1.0 (linear).
+ * Count concordant pairs between two orderings.
+ * A pair (i, j) is concordant if both orderings agree on which comes first.
+ * With 5 items there are C(5,2) = 10 possible pairs.
  *
- * @param accuracy - Placement accuracy in [0, 1] (see src/lib/line-scale.ts).
- * @returns Factor in [ACCURACY_FLOOR, 1].
+ * @param order     - Player's submitted ordering (array of IDs).
+ * @param trueOrder - Correct ordering (array of IDs).
+ * @returns Number of concordant pairs [0–10].
  */
-export function accuracyFactor(accuracy: number): number {
-  const a = Math.min(1, Math.max(0, accuracy));
-  return ACCURACY_FLOOR + (1 - ACCURACY_FLOOR) * a;
+export function concordantPairs(order: string[], trueOrder: string[]): number {
+  // Build rank maps: id → position index
+  const rankA: Record<string, number> = {};
+  const rankB: Record<string, number> = {};
+  for (let i = 0; i < order.length; i++) rankA[order[i]] = i;
+  for (let i = 0; i < trueOrder.length; i++) rankB[trueOrder[i]] = i;
+
+  let count = 0;
+  for (let i = 0; i < trueOrder.length; i++) {
+    for (let j = i + 1; j < trueOrder.length; j++) {
+      const a = trueOrder[i];
+      const b = trueOrder[j];
+      // Concordant if the relative order matches
+      if ((rankA[a] - rankA[b]) * (rankB[a] - rankB[b]) > 0) {
+        count++;
+      }
+    }
+  }
+  return count;
 }
 
 /**
- * Computes the score for a single round given the number of wrong guesses.
+ * Score for a single node's distance from its true position.
+ * Full 40 pts if within tolerance, linear decay otherwise.
  *
- * Formula: Math.max(0, Math.round(ROUND_MAX * DECAY_BASE ** wrongGuesses))
- *
- * @param wrongGuesses - Number of incorrect full-ranking attempts (≥ 0).
- *                       Equals guesses.length - 1 for a solved round.
- * @returns Integer in the range [0, 33].
+ * @param placedFraction - Player's placed fraction [0–1].
+ * @param trueFraction   - True fraction [0–1].
+ * @returns Score [0–40].
  */
-export function scoreForRound(wrongGuesses: number): number {
-  return Math.max(0, Math.round(ROUND_MAX * Math.pow(DECAY_BASE, wrongGuesses)));
+export function nodeDistanceScore(placedFraction: number, trueFraction: number): number {
+  const error = Math.abs(placedFraction - trueFraction);
+  if (error <= TOLERANCE) return 40;
+  const score = 40 * Math.max(0, 1 - (error - TOLERANCE) / (1 - TOLERANCE));
+  return score;
 }
 
 /**
- * Computes the score for a completed stat session, blending the wrong-guess
- * penalty with placement proximity (feature 010).
+ * Ordering score: derives orders from positions/values, counts concordant pairs,
+ * scales to [0–133].
  *
- * Formula: round( base(wrongGuesses) × accuracyFactor(accuracy) ), clamped to [0, 33].
- * where base = ROUND_MAX × DECAY_BASE ^ wrongGuesses (before rounding).
- *
- * The last guess in a solved session is always the correct one, so
- * wrongGuesses = session.guesses.length - 1.
- *
- * @param session  - A StatSession with at least one guess (the solving guess).
- * @param accuracy - Placement accuracy A ∈ [0, 1]. Defaults to 1 (accuracy-neutral)
- *                   for backwards-compatibility with guesses lacking positions.
- * @returns Integer in the range [0, 33].
+ * @param positions  - Player's positions Record<countryId, fraction>.
+ * @param trueValues - True stat values Record<countryId, rawValue>.
+ * @returns Integer [0–133].
  */
-export function scoreForStat(session: StatSession, accuracy: number = 1): number {
-  const wrongGuesses = Math.max(0, session.guesses.length - 1);
-  const base = ROUND_MAX * Math.pow(DECAY_BASE, wrongGuesses);
-  const scaled = base * accuracyFactor(accuracy);
-  return Math.min(ROUND_MAX, Math.max(0, Math.round(scaled)));
-}
-
-/**
- * Computes the total game score across all three stat sessions.
- *
- * Applies a 1-point perfect-game bonus when all three round scores equal ROUND_MAX,
- * bringing the maximum from 99 to 100. With proximity scoring, a stat only reaches
- * ROUND_MAX when solved with 0 wrong guesses AND perfect placement (accuracy 1).
- *
- * @param statSessions - Exactly three StatSession objects (one per stat).
- * @param accuracies   - Optional per-stat placement accuracies (A ∈ [0, 1]), aligned
- *                       by index with statSessions. Defaults to accuracy-neutral (1).
- * @returns Integer in the range [0, 100].
- */
-export function totalScore(
-  statSessions: StatSession[],
-  accuracies?: number[],
+export function orderingScore(
+  positions: Record<string, number>,
+  trueValues: Record<string, number>,
 ): number {
-  const roundScores = statSessions.map((s, i) => scoreForStat(s, accuracies?.[i] ?? 1));
-  const sum = roundScores.reduce((acc, s) => acc + s, 0);
-  const bonus = roundScores.every((s) => s === ROUND_MAX) ? PERFECT_BONUS : 0;
-  return sum + bonus;
+  const playerOrder = deriveOrder(positions);
+  const truePositions = trueFractions(trueValues);
+  const trueOrder = deriveOrder(truePositions);
+  const pairs = concordantPairs(playerOrder, trueOrder);
+  return Math.round((pairs * ORDERING_MAX) / 10);
 }
+
+/**
+ * Distance score: sum of per-node distance scores for all 5 nodes.
+ *
+ * @param positions  - Player's positions Record<countryId, fraction>.
+ * @param trueValues - True stat values Record<countryId, rawValue>.
+ * @returns Number [0–200].
+ */
+export function distanceScore(
+  positions: Record<string, number>,
+  trueValues: Record<string, number>,
+): number {
+  const trueFracs = trueFractions(trueValues);
+  let total = 0;
+  for (const id of Object.keys(trueValues)) {
+    const placed = positions[id] ?? 0;
+    const truth = trueFracs[id];
+    total += nodeDistanceScore(placed, truth);
+  }
+  return total;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Composite scoring functions
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Score for a single stat: ordering + distance, multiplied by attempt decay.
+ *
+ * @param session    - The stat session (uses guesses.length for attempt count).
+ * @param positions  - Final guess positions Record<countryId, fraction>.
+ * @param trueValues - True stat values Record<countryId, rawValue>.
+ * @returns Integer [0–333].
+ */
+export function scoreForStat(
+  session: StatSession,
+  positions: Record<string, number>,
+  trueValues: Record<string, number>,
+): number {
+  const ordering = orderingScore(positions, trueValues);
+  const distance = distanceScore(positions, trueValues);
+  const rawTotal = ordering + distance;
+  const wrongGuesses = Math.max(0, session.guesses.length - 1);
+  const multiplier = Math.pow(ATTEMPT_DECAY, wrongGuesses);
+  return Math.min(STAT_MAX, Math.max(0, Math.round(rawTotal * multiplier)));
+}
+
+/**
+ * Total game score across all 3 stats.
+ * Adds +1 perfect bonus when all 3 stat scores equal STAT_MAX.
+ *
+ * @param statScores - Array of 3 per-stat scores.
+ * @returns Integer [0–1000].
+ */
+export function totalScore(statScores: number[]): number {
+  const sum = statScores.reduce((acc, s) => acc + s, 0);
+  const bonus = statScores.every((s) => s === STAT_MAX) ? PERFECT_BONUS : 0;
+  return Math.min(GAME_MAX, sum + bonus);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Share text
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Builds the share text for the result card.
  * Format:
- *   WorldOrder #N — X pts
+ *   WorldOrder #N — X/1000 pts
  *
  *   Stat 1: 🟩🟥... / 🟩🟩🟩🟩🟩
  *   Stat 2: ...
@@ -102,7 +171,7 @@ export function buildShareText(
   puzzleNumber: number,
 ): string {
   const score = state.finalScore ?? 0;
-  const header = `WorldOrder #${puzzleNumber} — ${score} pts`;
+  const header = `WorldOrder #${puzzleNumber} — ${score}/${GAME_MAX} pts`;
 
   const statLines = state.stats.map((session, i) => {
     const rows = session.guesses.map((guess) =>

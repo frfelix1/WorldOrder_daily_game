@@ -229,28 +229,28 @@ describe('ResultCard — performanceLabel variants', () => {
     };
   }
 
-  it('shows Perfect label for score === 100', () => {
-    render(<ResultCard state={makeState(100)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Perfect label for score === 1000', () => {
+    render(<ResultCard state={makeState(1000)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /perfect/i })).toBeInTheDocument();
   });
 
-  it('shows Excellent label for score >= 80', () => {
-    render(<ResultCard state={makeState(85)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Excellent label for score >= 800', () => {
+    render(<ResultCard state={makeState(850)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /excellent/i })).toBeInTheDocument();
   });
 
-  it('shows Great label for score >= 60', () => {
-    render(<ResultCard state={makeState(65)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Great label for score >= 600', () => {
+    render(<ResultCard state={makeState(650)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /great/i })).toBeInTheDocument();
   });
 
-  it('shows Good label for score >= 40', () => {
-    render(<ResultCard state={makeState(45)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Good label for score >= 400', () => {
+    render(<ResultCard state={makeState(450)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /good/i })).toBeInTheDocument();
   });
 
-  it('shows Keep Exploring label for score below 40', () => {
-    render(<ResultCard state={makeState(30)} puzzleNumber={1} puzzle={mockPuzzle} />);
+  it('shows Keep Exploring label for score below 400', () => {
+    render(<ResultCard state={makeState(300)} puzzleNumber={1} puzzle={mockPuzzle} />);
     expect(screen.getByRole('img', { name: /keep exploring/i })).toBeInTheDocument();
   });
 });

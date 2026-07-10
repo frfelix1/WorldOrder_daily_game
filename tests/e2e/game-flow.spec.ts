@@ -112,7 +112,7 @@ test.describe('Line-scale board — rendering', () => {
 // ── Completed-state / results screen (unchanged pipeline) ────────────────────
 
 test.describe('Results screen', () => {
-  test('injected completed state shows the result card with a score in [0,100]', async ({ page }) => {
+  test('injected completed state shows the result card with a score in [0,1000]', async ({ page }) => {
     await page.addInitScript((state) => {
       localStorage.setItem('worldorder_state', JSON.stringify(state));
     }, completedState());
@@ -123,7 +123,7 @@ test.describe('Results screen', () => {
     const scoreText = await page.locator('[data-testid="final-score"]').textContent();
     const score = parseInt(scoreText ?? '0');
     expect(score).toBeGreaterThanOrEqual(0);
-    expect(score).toBeLessThanOrEqual(100);
+    expect(score).toBeLessThanOrEqual(1000);
 
     // Three stat sections, each with an accessible label.
     const sections = page.locator('[data-testid="result-card"] section');

@@ -10,20 +10,20 @@ describe('ScoreDisplay', () => {
 
   it('re-renders when score prop changes', () => {
     const { rerender } = render(<ScoreDisplay score={10} />);
-    expect(screen.getByText('10 / 100')).toBeInTheDocument();
+    expect(screen.getByText('10 / 1000')).toBeInTheDocument();
     rerender(<ScoreDisplay score={100} />);
-    expect(screen.getByText('100 / 100')).toBeInTheDocument();
+    expect(screen.getByText('100 / 1000')).toBeInTheDocument();
   });
 
-  it('includes accessible label "Running score: N / 100"', () => {
+  it('includes accessible label "Running score: N / 1000"', () => {
     render(<ScoreDisplay score={75} />);
-    const el = screen.getByLabelText(/Running score: 75 \/ 100/);
+    const el = screen.getByLabelText(/Running score: 75 \/ 1000/);
     expect(el).toBeInTheDocument();
   });
 
   it('is always visible (not conditionally hidden)', () => {
     render(<ScoreDisplay score={0} />);
-    const el = screen.getByLabelText(/Running score: 0 \/ 100/);
+    const el = screen.getByLabelText(/Running score: 0 \/ 1000/);
     expect(el).toBeVisible();
   });
 });
@@ -45,7 +45,7 @@ describe('ScoreDisplay — static score bar (US2)', () => {
   });
 
   it('inner bar renders at the correct width percentage immediately', () => {
-    render(<ScoreDisplay score={42} />);
+    render(<ScoreDisplay score={420} />);
     const bar = screen.getByTestId('score-bar');
     expect(bar).toHaveStyle({ width: '42%' });
   });
