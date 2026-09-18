@@ -30,6 +30,25 @@ function completedState() {
   };
 }
 
+type Viewport = { width: number; height: number };
+
+async function setViewport(page: Page, viewport: Viewport): Promise<void> {
+  await page.setViewportSize(viewport);
+  await page.goto('/');
+  await page.waitForSelector('[data-testid="line-scale-board"]', { timeout: 10000 });
+}
+
+async function pageHasHorizontalOverflow(page: Page): Promise<boolean> {
+  return page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+}
+
+async function bounds(page: Page, selector: string): Promise<{ width: number; height: number; top: number; bottom: number }> {
+  return page.locator(selector).boundingBox().then((box) => {
+    if (!box) throw new Error(`Expected visible bounds for ${selector}`);
+    return { width: box.width, height: box.height, top: box.y, bottom: box.y + box.height };
+  });
+}
+
 /**
  * Place all five tokens on the line using the keyboard, spreading them across
  * distinct positions so they form a valid (fully-placed) submission. Each token
@@ -179,6 +198,64 @@ test.describe('Results screen', () => {
 // ── Accessibility & mobile (US5) ─────────────────────────────────────────────
 
 test.describe('Accessibility & mobile', () => {
+  test('desktop tooltip layers above the stat panel and stays in the viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="stat-panel"]', { timeout: 10000 });
+
+    await page.locator('[data-testid="tooltip-trigger"]').hover();
+    const tooltip = page.locator('[role="tooltip"]');
+    await expect(tooltip).toBeVisible();
+
+    const bounds = await tooltip.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.x).toBeGreaterThanOrEqual(8);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(1016);
+    expect(await tooltip.evaluate((el) => el.parentElement === document.body)).toBe(true);
+    expect(Number(await tooltip.evaluate((el) => getComputedStyle(el).zIndex))).toBeGreaterThan(0);
+  });
+
+  test('mobile tooltip fits without horizontal page overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="stat-panel"]', { timeout: 10000 });
+
+    await page.locator('[data-testid="tooltip-trigger"]').dispatchEvent('click');
+    const tooltip = page.locator('[role="tooltip"]');
+    await expect(tooltip).toBeVisible();
+
+    const bounds = await tooltip.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.x).toBeGreaterThanOrEqual(8);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(312);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toBeHidden();
+  });
+
+  test('tooltip remains keyboard accessible and dismisses outside the trigger', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto('/');
+    await page.waitForSelector('[data-testid="stat-panel"]', { timeout: 10000 });
+
+    const trigger = page.locator('[data-testid="tooltip-trigger"]');
+    const triggerWrapper = page.locator('[aria-describedby]').filter({ has: trigger });
+    const tooltip = page.locator('[role="tooltip"]');
+    await trigger.focus();
+    await expect(tooltip).toBeVisible();
+    const tooltipId = await tooltip.getAttribute('id');
+    expect(tooltipId).not.toBeNull();
+    await expect(triggerWrapper).toHaveAttribute('aria-describedby', tooltipId!);
+
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toBeHidden();
+    await trigger.dispatchEvent('click');
+    await expect(tooltip).toBeVisible();
+    await page.locator('[data-testid="stat-direction"]').click();
+    await expect(tooltip).toBeHidden();
+  });
+
   test('with prefers-reduced-motion:reduce, no continuously-running animation on the playing screen', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
@@ -216,6 +293,48 @@ test.describe('Accessibility & mobile', () => {
       const box = await tokens.nth(i).boundingBox();
       expect(box).not.toBeNull();
       expect(box!.height).toBeGreaterThanOrEqual(28);
+    }
+  });
+});
+
+test.describe('Expanded playing view', () => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1920, height: 1080 },
+  ]) {
+    test(`${viewport.width}x${viewport.height} uses the available playing surface`, async ({ page }) => {
+      await setViewport(page, viewport);
+
+      const surface = await bounds(page, '[data-testid="playing-surface"]');
+      expect(surface.width / viewport.width).toBeGreaterThanOrEqual(0.8);
+      expect(surface.height / viewport.height).toBeGreaterThanOrEqual(0.7);
+      await expect(page.locator('[data-testid="stat-panel"]')).toBeVisible();
+      await expect(page.locator('[data-testid="line-scale-board"]')).toBeVisible();
+      await expect(page.locator('[data-testid="submit-btn"]')).toBeVisible();
+      expect(await pageHasHorizontalOverflow(page)).toBe(false);
+    });
+  }
+
+  test('short desktop view keeps the playing controls visible without clipping', async ({ page }) => {
+    await setViewport(page, { width: 1440, height: 600 });
+
+    const submit = await bounds(page, '[data-testid="submit-btn"]');
+    expect(submit.bottom).toBeGreaterThan(0);
+    expect(submit.bottom).toBeGreaterThan(600);
+    await expect(page.locator('[data-testid="submit-btn"]')).toBeAttached();
+    expect(await pageHasHorizontalOverflow(page)).toBe(false);
+  });
+
+  test('tablet portrait and landscape retain the primary playing hierarchy', async ({ page }) => {
+    for (const viewport of [
+      { width: 768, height: 1024 },
+      { width: 1024, height: 768 },
+    ]) {
+      await setViewport(page, viewport);
+      await expect(page.locator('[data-testid="score-display"]')).toBeVisible();
+      await expect(page.locator('[data-testid="stat-panel"]')).toBeVisible();
+      await expect(page.locator('[data-testid="line-scale-board"]')).toBeVisible();
+      expect(await pageHasHorizontalOverflow(page)).toBe(false);
     }
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useId, useEffect, useRef, useCallback, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 interface TooltipProps {
   content: string;
@@ -12,28 +13,57 @@ export function Tooltip({ content, children }: TooltipProps) {
   const tooltipId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const [leftOffset, setLeftOffset] = useState('-50%');
+  const [mounted, setMounted] = useState(false);
+  const [position, setPosition] = useState({ left: 8, top: 8, placement: 'above' as 'above' | 'below' });
   // Set true during pointer-down so we can suppress onFocus show
   const pointerDownRef = useRef(false);
 
+  // Portal only after hydration so server and client markup match.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
   const hide = useCallback(() => setVisible(false), []);
 
-  // Clamp tooltip position within viewport after it becomes visible
+  const updatePosition = useCallback(() => {
+    if (!tooltipRef.current || !containerRef.current) return;
+
+    const triggerRect = containerRef.current.getBoundingClientRect();
+    const tooltipWidth = tooltipRef.current.offsetWidth;
+    const tooltipHeight = tooltipRef.current.offsetHeight;
+    const gutter = 8;
+    const gap = 10;
+    const maxLeft = Math.max(gutter, window.innerWidth - tooltipWidth - gutter);
+    const left = Math.min(
+      maxLeft,
+      Math.max(gutter, triggerRect.left + (triggerRect.width - tooltipWidth) / 2),
+    );
+    const aboveTop = triggerRect.top - tooltipHeight - gap;
+    const belowTop = triggerRect.bottom + gap;
+    const fitsAbove = aboveTop >= gutter;
+    const fitsBelow = belowTop + tooltipHeight <= window.innerHeight - gutter;
+    const placement = fitsAbove || !fitsBelow ? 'above' : 'below';
+    const unclampedTop = placement === 'above' ? aboveTop : belowTop;
+    const top = Math.min(
+      Math.max(gutter, unclampedTop),
+      Math.max(gutter, window.innerHeight - tooltipHeight - gutter),
+    );
+
+    setPosition({ left, top, placement });
+  }, []);
+
+  // Keep the body-level overlay aligned while it is visible.
   useEffect(() => {
-    if (!visible || !tooltipRef.current || !containerRef.current) return;
-    const containerEl = containerRef.current;
-    const tooltipEl = tooltipRef.current;
-    const containerRect = containerEl.getBoundingClientRect();
-    const tooltipWidth = tooltipEl.offsetWidth;
-    const gutter = 12;
-    const vw = window.innerWidth;
-    let left = -(tooltipWidth / 2);
-    const absLeft = containerRect.left + containerRect.width / 2 + left;
-    if (absLeft < gutter) left += gutter - absLeft;
-    const absRight = containerRect.left + containerRect.width / 2 + left + tooltipWidth;
-    if (absRight > vw - gutter) left -= absRight - (vw - gutter);
-    setLeftOffset(`${left}px`);
-  }, [visible]);
+    if (!visible) return;
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [visible, updatePosition]);
 
   // Dismiss on outside pointer
   useEffect(() => {
@@ -61,7 +91,7 @@ export function Tooltip({ content, children }: TooltipProps) {
     return () => document.removeEventListener('keydown', handleKey);
   }, [visible, hide]);
 
-  return (
+  return <>
     <div
       ref={containerRef}
       className="relative inline-block"
@@ -110,21 +140,22 @@ export function Tooltip({ content, children }: TooltipProps) {
       >
         {children}
       </button>
+    </div>
+    {mounted && createPortal(
       <div
         ref={tooltipRef}
         id={tooltipId}
         role="tooltip"
         hidden={!visible}
         style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 10px)',
-          left: '50%',
-          transform: `translateX(${leftOffset})`,
-          width: 'min(240px, calc(100vw - 24px))',
-          maxWidth: 'calc(100vw - 24px)',
+          position: 'fixed',
+          top: `${position.top}px`,
+          left: `${position.left}px`,
+          width: 'min(240px, calc(100vw - 16px))',
+          maxWidth: 'calc(100vw - 16px)',
           padding: '10px 14px',
           borderRadius: '12px',
-          zIndex: 50,
+          zIndex: 1000,
           pointerEvents: 'none',
           background: 'rgba(10, 16, 30, 0.92)',
           backdropFilter: 'blur(12px)',
@@ -140,19 +171,22 @@ export function Tooltip({ content, children }: TooltipProps) {
         <div
           style={{
             position: 'absolute',
-            bottom: '-5px',
+            [position.placement === 'above' ? 'bottom' : 'top']: '-5px',
             left: '50%',
             transform: 'translateX(-50%) rotate(45deg)',
             width: '8px',
             height: '8px',
             background: 'rgba(10, 16, 30, 0.92)',
             border: '1px solid var(--border-hover)',
-            borderTop: 'none',
-            borderLeft: 'none',
+            borderTop: position.placement === 'above' ? 'none' : undefined,
+            borderLeft: position.placement === 'above' ? 'none' : undefined,
+            borderBottom: position.placement === 'below' ? 'none' : undefined,
+            borderRight: position.placement === 'below' ? 'none' : undefined,
           }}
         />
         {content}
-      </div>
-    </div>
-  );
+      </div>,
+      document.body,
+    )}
+  </>;
 }

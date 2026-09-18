@@ -590,11 +590,12 @@ export default function GamePage() {
       )}
 
       <div
+        data-testid="playing-surface"
         className="w-full flex flex-col"
         style={{
           position: 'relative',
           zIndex: 1,
-          maxWidth: 'var(--board-max)',
+           maxWidth: 'var(--playing-board-max, var(--board-max))',
           paddingTop: 'var(--space-page-top)',
           paddingBottom: 'max(var(--space-page), env(safe-area-inset-bottom, 0px))',
           paddingLeft: 'max(var(--space-page), env(safe-area-inset-left, 0px))',
@@ -698,8 +699,8 @@ export default function GamePage() {
             // Break out of the --board-max column to a wider, centered width.
             // Uses negative margin centering instead of transform to avoid
             // creating a containing block that breaks position:fixed in DragOverlay.
-            width: 'var(--line-board-width)',
-            marginLeft: 'calc(50% - var(--line-board-width) / 2)',
+             width: 'var(--playing-line-board-width, var(--line-board-width))',
+             marginLeft: 'calc(50% - var(--playing-line-board-width, var(--line-board-width)) / 2)',
           }}
         >
           <LineScaleBoard

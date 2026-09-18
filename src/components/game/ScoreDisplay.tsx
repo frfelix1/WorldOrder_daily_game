@@ -6,7 +6,7 @@ export function ScoreDisplay({ score }: ScoreDisplayProps) {
   const pct = Math.min(100, Math.round((score / 1000) * 100));
 
   return (
-    <div aria-label={`Running score: ${score} / 1000`}>
+    <div data-testid="score-display" aria-label={`Running score: ${score} / 1000`}>
       <div
         style={{
           display: 'flex',

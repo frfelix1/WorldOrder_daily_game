@@ -74,6 +74,40 @@
   --wrong-faint:    rgba(255, 48, 98, 0.08);
 }
 
+/* Playing-view layout: compact by default, bounded expansion on larger screens. */
+[data-testid='playing-surface'] {
+  --playing-board-max: min(100%, 28rem);
+  --playing-line-board-width: min(100vw - 2 * var(--space-page), 46rem);
+}
+
+@media (min-width: 640px) and (min-height: 720px) {
+  [data-testid='playing-surface'] {
+    --playing-board-max: min(100%, 42rem);
+    --playing-line-board-width: min(100vw - 3rem, 64rem);
+    --space-page-top: clamp(24px, 6vh, 56px);
+    --gap-section: clamp(20px, 3vh, 32px);
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 800px) {
+  [data-testid='playing-surface'] {
+    --playing-board-max: min(100%, 80vw, 96rem);
+    --playing-line-board-width: min(100vw - 5rem, 76rem);
+    --space-page: clamp(24px, 3vw, 48px);
+    --space-page-top: clamp(32px, 7vh, 72px);
+    --gap-section: clamp(24px, 4vh, 42px);
+  }
+}
+
+@media (min-width: 640px) and (max-height: 719px) {
+  [data-testid='playing-surface'] {
+    --playing-board-max: min(100%, 34rem);
+    --playing-line-board-width: min(100vw - 3rem, 52rem);
+    --space-page-top: 16px;
+    --gap-section: 16px;
+  }
+}
+
 @theme inline {
   --color-background: var(--bg);
   --color-foreground: var(--text-primary);

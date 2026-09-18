@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Tooltip } from '../../src/components/ui/Tooltip';
 
 describe('Tooltip', () => {
@@ -96,5 +96,38 @@ describe('Tooltip', () => {
   it('T025: tooltip trigger has data-testid="tooltip-trigger"', () => {
     render(<Tooltip content="Test"><button>Click</button></Tooltip>);
     expect(screen.getByTestId('tooltip-trigger')).toBeInTheDocument();
+  });
+
+  it('renders the visible tooltip at document body level', () => {
+    render(<Tooltip content="Layered tooltip"><span>Title</span></Tooltip>);
+    fireEvent.mouseEnter(screen.getByText('Title').closest('[aria-describedby]') as HTMLElement);
+
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip.parentElement).toBe(document.body);
+    expect(tooltip.style.position).toBe('fixed');
+    expect(tooltip.style.zIndex).toBe('1000');
+  });
+
+  it('clamps visible tooltip placement to the viewport', async () => {
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(320);
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(700);
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(240);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(80);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.dataset.testid === 'tooltip-trigger') {
+        return { left: 4, right: 48, top: 120, bottom: 164, width: 44, height: 44, x: 4, y: 120, toJSON: () => ({}) };
+      }
+      return { left: 0, right: 240, top: 0, bottom: 80, width: 240, height: 80, x: 0, y: 0, toJSON: () => ({}) };
+    });
+
+    render(<Tooltip content="A long explanation that should remain readable"><span>Title</span></Tooltip>);
+    fireEvent.mouseEnter(screen.getByText('Title').closest('[aria-describedby]') as HTMLElement);
+
+    const tooltip = screen.getByRole('tooltip');
+    await waitFor(() => {
+      expect(parseFloat(tooltip.style.left)).toBeGreaterThanOrEqual(8);
+      expect(parseFloat(tooltip.style.left) + 240).toBeLessThanOrEqual(312);
+      expect(parseFloat(tooltip.style.top)).toBeGreaterThanOrEqual(8);
+    });
   });
 });
