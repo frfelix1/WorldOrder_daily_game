@@ -26,6 +26,95 @@ import { StatsView } from '../components/game/StatsView';
 
 type PageStatus = 'loading' | 'error' | 'playing' | 'complete';
 
+function FaqMenu() {
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<'scoring' | 'data'>('scoring');
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="fixed right-4 top-4 z-20 rounded-lg border border-[rgba(232,197,71,0.35)] bg-[rgba(232,197,71,0.12)] px-3 py-2 text-xs font-semibold tracking-[0.18em] text-[var(--gold-bright)] shadow-[0_0_16px_rgba(232,197,71,0.12)] transition-colors hover:bg-[rgba(232,197,71,0.2)] hover:text-white"
+        aria-haspopup="dialog"
+        aria-label="FAQ"
+      >
+        FAQ
+      </button>
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 pt-16 backdrop-blur-sm"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setOpen(false);
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="faq-title"
+            aria-label="Frequently asked questions"
+            className="w-full max-w-md rounded-2xl border border-[var(--border-hover)] bg-[var(--surface-1)] p-5 shadow-2xl"
+          >
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--gold)]">WorldOrder</p>
+                <h2 id="faq-title" className="text-xl font-semibold text-[var(--text-primary)]">Frequently asked questions</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close FAQ"
+                className="rounded-md px-2 py-1 text-xl leading-none text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              >
+                ×
+              </button>
+            </div>
+
+            <div role="tablist" aria-label="FAQ topics" className="mb-5 flex gap-1 border-b border-[var(--border)]">
+              {[
+                ['scoring', 'How scoring works'],
+                ['data', 'Data & sources'],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === value}
+                  onClick={() => setTab(value as 'scoring' | 'data')}
+                  className="border-b-2 px-2 pb-3 text-xs font-semibold transition-colors"
+                  style={{
+                    borderColor: tab === value ? 'var(--gold)' : 'transparent',
+                    color: tab === value ? 'var(--gold-bright)' : 'var(--text-muted)',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'scoring' ? (
+              <div role="tabpanel" className="space-y-4 text-sm leading-relaxed text-[var(--text-secondary)]">
+                <p>Your score combines three things:</p>
+                <ul className="space-y-3">
+                  <li><strong className="text-[var(--text-primary)]">Correct order</strong><br />Putting every item in the right order earns the most points.</li>
+                  <li><strong className="text-[var(--text-primary)]">Distance from the true position</strong><br />The closer each item is to its actual position on the line, the better.</li>
+                  <li><strong className="text-[var(--text-primary)]">Fewer attempts preserve more points</strong><br />Each additional attempt reduces the points you can keep.</li>
+                </ul>
+              </div>
+            ) : (
+              <div role="tabpanel" className="space-y-4 text-sm leading-relaxed text-[var(--text-secondary)]">
+                <p>The game&apos;s statistics are pulled from <strong className="text-[var(--text-primary)]">Wikipedia</strong>.</p>
+                <p>The dataset is mostly made up of UN countries, but it also includes some territories, such as <strong className="text-[var(--text-primary)]">Aruba</strong>, when Wikipedia has useful data for them.</p>
+                <p>Sources and coverage may grow over time.</p>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+    </>
+  );
+}
+
 const EMPTY_POSITIONS: Record<string, number> = {};
 const EMPTY_LOCKS: Record<string, boolean> = {};
 
@@ -497,7 +586,6 @@ export default function GamePage() {
           >
             Try Again
           </button>
-          <button type="button" onClick={() => setShowStats(true)} className="mt-3 text-sm underline">View daily stats</button>
           <div
             className="w-full h-px mt-6"
             style={{ background: 'linear-gradient(90deg, transparent, rgba(232,197,71,0.2), transparent)' }}
@@ -528,6 +616,7 @@ export default function GamePage() {
           width: '100%',
         }}
       >
+        <FaqMenu />
         <LiveRegion message={announcement} />
         <ResultCard
           state={gameState}
@@ -573,6 +662,7 @@ export default function GamePage() {
 
   return (
     <main className="flex flex-col items-center min-h-screen">
+      <FaqMenu />
       {/* Animated aurora blobs */}
       <div
         aria-hidden="true"
@@ -681,8 +771,7 @@ export default function GamePage() {
           >
             WorldOrder
           </h1>
-          <button type="button" onClick={() => setShowStats(true)} className="mt-3 min-h-[var(--touch-min)] rounded-lg px-3 text-xs underline">View daily stats</button>
-          <div
+           <div
             className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold tracking-[0.15em] uppercase mt-2"
             style={{
               border: '1px solid rgba(232,197,71,0.2)',

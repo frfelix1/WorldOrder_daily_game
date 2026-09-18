@@ -378,6 +378,35 @@ describe('GamePage — resume in progress (US3, FR-017)', () => {
 });
 
 describe('GamePage — misc', () => {
+  it('opens the FAQ menu with scoring information and switches to the data tab', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('line-scale-board')).toBeInTheDocument(), { timeout: 3000 });
+
+    const faq = screen.getByRole('button', { name: 'FAQ' });
+    expect(faq).toHaveClass('px-3', 'py-2', 'text-xs');
+    expect(faq).toHaveClass('text-[var(--gold-bright)]', 'bg-[rgba(232,197,71,0.12)]');
+    expect(screen.queryByRole('button', { name: /View daily stats/i })).not.toBeInTheDocument();
+
+    fireEvent.click(faq);
+    expect(screen.getByRole('dialog', { name: 'Frequently asked questions' })).toBeInTheDocument();
+    expect(screen.getByText('Correct order')).toBeInTheDocument();
+    expect(screen.getByText('Distance from the true position')).toBeInTheDocument();
+    expect(screen.getByText('Fewer attempts preserve more points')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Data & sources' }));
+    expect(screen.getAllByText('Wikipedia').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Aruba').length).toBeGreaterThan(0);
+  });
+
+  it('closes the FAQ menu with its close button', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('line-scale-board')).toBeInTheDocument(), { timeout: 3000 });
+
+    fireEvent.click(screen.getByRole('button', { name: 'FAQ' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close FAQ' }));
+    expect(screen.queryByRole('dialog', { name: 'Frequently asked questions' })).not.toBeInTheDocument();
+  });
+
   it('renders the WorldOrder title after load', async () => {
     render(<GamePage />);
     await waitFor(() => expect(screen.getByText('WorldOrder')).toBeInTheDocument(), { timeout: 3000 });

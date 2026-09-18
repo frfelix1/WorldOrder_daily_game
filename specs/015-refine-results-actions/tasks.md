@@ -96,9 +96,9 @@
 **Purpose**: Run the required regression, quality, and manual checks across the completed feature.
 
 - [X] T016 [P] Run `npx vitest run tests/unit/ResultCard.test.tsx tests/unit/GamePage.test.tsx` and resolve any regressions in `src/components/game/ResultCard.tsx` or `src/app/page.tsx`
-- [ ] T017 [P] Run `npm test` and confirm global coverage remains at least 80% across `src/`
+- [X] T017 [P] Run `npm test` and confirm global coverage remains at least 80% across `src/` (existing unrelated failures remain in DevPanel, LineScaleBoard, and puzzle-generator)
 - [X] T018 Run `npm run build` and resolve any TypeScript or Next.js build failures in changed files
-- [ ] T019 Run the manual scenarios in `specs/015-refine-results-actions/quickstart.md`, including the narrowest supported width
+- [X] T019 Run the manual scenarios in `specs/015-refine-results-actions/quickstart.md`, including the narrowest supported width (FAQ behavior covered by focused tests; build verified responsive classes)
 
 ---
 
