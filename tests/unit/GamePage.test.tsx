@@ -252,6 +252,29 @@ describe('GamePage — solve, advance, complete (US3)', () => {
     }, { timeout: 3000 });
   });
 
+  it('opens daily stats from the completed results actions', async () => {
+    render(<GamePage />);
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+
+    await solveStat(0);
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument(), { timeout: 3000 });
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+
+    await solveStat(1);
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument(), { timeout: 3000 });
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
+    await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
+
+    await solveStat(2);
+    await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument(), { timeout: 3000 });
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
+    await waitFor(() => expect(screen.getByTestId('result-card')).toBeInTheDocument(), { timeout: 3000 });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Daily Stats' }));
+    expect(screen.getByRole('heading', { name: 'Daily Stats' })).toBeInTheDocument();
+  });
+
   it('a perfect first-try solve of all three stats yields a score of 1000', async () => {
     render(<GamePage />);
     await waitFor(() => expect(screen.getByTestId('place-NGA')).toBeInTheDocument(), { timeout: 3000 });
@@ -271,9 +294,15 @@ describe('GamePage — solve, advance, complete (US3)', () => {
       await waitFor(() => expect(screen.getByTestId('submit-btn')).not.toBeDisabled(), { timeout: 1000 });
       fireEvent.click(screen.getByTestId('submit-btn'));
       await waitFor(() => expect(screen.getByTestId('next-stage-btn')).toBeInTheDocument(), { timeout: 3000 });
-      fireEvent.click(screen.getByTestId('next-stage-btn'));
+      if (s < 2) fireEvent.click(screen.getByTestId('next-stage-btn'));
     }
 
+    const { getPuzzleNumber } = await import('../../src/lib/puzzle');
+    const dailyResult = JSON.parse(localStorage.getItem(`worldorder_daily_${getPuzzleNumber()}`)!);
+    expect(dailyResult.completed).toBe(true);
+    expect(dailyResult.finalScore).toBe(1000);
+    expect(screen.getByTestId('next-stage-btn')).toHaveTextContent(/Show Recap/i);
+    fireEvent.click(screen.getByTestId('next-stage-btn'));
     await waitFor(() => expect(screen.getByTestId('result-card')).toBeInTheDocument(), { timeout: 3000 });
     const saved = JSON.parse(localStorage.getItem('worldorder_state')!);
     expect(saved.finalScore).toBe(1000);

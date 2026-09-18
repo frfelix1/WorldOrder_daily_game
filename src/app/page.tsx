@@ -1,9 +1,17 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import type { PuzzleFile, GameState, Guess, StatSession } from '../types';
+import type { DailyResult, PuzzleFile, GameState, Guess, StatSession, StatsHistory } from '../types';
 import { getPuzzleNumberForDate, getUTCDateString } from '../lib/puzzle';
-import { loadGameState, saveGameState, loadPlayerStats, savePlayerStats } from '../lib/game-state';
+import {
+  loadGameState,
+  saveGameState,
+  loadPlayerStats,
+  savePlayerStats,
+  loadStatsHistory,
+  saveDailyResult,
+  repairDailyResult,
+} from '../lib/game-state';
 import { scoreForStat, totalScore } from '../lib/scoring';
 import { deriveOrder, trueFractions } from '../lib/line-scale';
 import { formatStatValue } from '../lib/formatting';
@@ -14,6 +22,7 @@ import { FeedbackRow } from '../components/game/FeedbackRow';
 import { LiveRegion } from '../components/ui/LiveRegion';
 import { ResultCard } from '../components/game/ResultCard';
 import { DevPanel } from '../components/dev/DevPanel';
+import { StatsView } from '../components/game/StatsView';
 
 type PageStatus = 'loading' | 'error' | 'playing' | 'complete';
 
@@ -95,6 +104,14 @@ export default function GamePage() {
   const [positions, setPositions] = useState<Record<string, number>>({ ...EMPTY_POSITIONS });
   const [locked, setLocked] = useState<Record<string, boolean>>({ ...EMPTY_LOCKS });
   const [announcement, setAnnouncement] = useState('');
+  const [statsHistory, setStatsHistory] = useState<StatsHistory | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const [persistenceStatus, setPersistenceStatus] = useState<'saved' | 'unsaved' | null>(null);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setStatsHistory(loadStatsHistory()), 0);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // Computed once per session at mount; refreshes automatically at UTC midnight
   // so a tab left open overnight will get the new puzzle without a manual reload.
@@ -113,24 +130,36 @@ export default function GamePage() {
   const [devDate, setDevDate] = useState<string | null>(null);
   const effectiveDate = (IS_DEV && devDate) ? devDate : today;
   const puzzleNumber = getPuzzleNumberForDate(effectiveDate);
+  const currentResult = gameState?.status === 'complete' && gameState.finalScore !== null
+    ? {
+        version: 1 as const,
+        puzzleNumber: gameState.puzzleNumber,
+        dateUTC: gameState.dateUTC,
+        completed: true as const,
+        finalScore: gameState.finalScore,
+      }
+    : null;
 
   // Visual effects
   const [roundCompleteEffect, setRoundCompleteEffect] = useState(false);
 
-  function completeGame(finalScore: number) {
-    if (!puzzle || !gameState) return;
-
-    const completedState: GameState = {
-      ...gameState,
-      status: 'complete',
+  function completeGame(completedState: GameState, showRecap = true): void {
+    const finalScore = completedState.finalScore ?? completedState.runningScore;
+    const dailyResult: DailyResult = {
+      version: 1,
+      puzzleNumber: completedState.puzzleNumber,
+      dateUTC: completedState.dateUTC,
+      completed: true,
       finalScore,
-      updatedAt: Date.now(),
     };
+    const saved = saveDailyResult(dailyResult);
 
     setGameState(completedState);
     saveGameState(completedState);
+    setStatsHistory(loadStatsHistory());
+    setPersistenceStatus(saved ? 'saved' : 'unsaved');
     setAnnouncement(`Game complete! Your score is ${finalScore} out of 1000 points.`);
-    setPageStatus('complete');
+    if (showRecap) setPageStatus('complete');
 
     const playerStats = loadPlayerStats();
     const updatedPlayerStats = {
@@ -178,7 +207,12 @@ export default function GamePage() {
 
     if (savedState) {
       if (savedState.status === 'complete') {
+        // Restore persisted game state after the browser-only storage read.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setGameState(savedState);
+        const repaired = repairDailyResult(savedState);
+        setPersistenceStatus(repaired ? 'saved' : 'unsaved');
+        setStatsHistory(loadStatsHistory());
         setPageStatus('complete');
         fetchPuzzle(effectiveDate);
         return;
@@ -198,8 +232,13 @@ export default function GamePage() {
     const saved = loadGameState(pn);
 
     if (saved) {
+      // Restore persisted game state after the browser-only storage read.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGameState(saved);
       if (saved.status === 'complete') {
+        const repaired = repairDailyResult(saved);
+        setPersistenceStatus(repaired ? 'saved' : 'unsaved');
+        setStatsHistory(loadStatsHistory());
         setPageStatus('complete');
       } else {
         const lastStatIndex = saved.activeStatIndex;
@@ -282,12 +321,16 @@ export default function GamePage() {
       stats: updatedStats,
       runningScore: newRunningScore,
       finalScore: isComplete ? newRunningScore : gameState.finalScore,
-      status: 'in_progress',
+      status: isComplete ? 'complete' : 'in_progress',
       updatedAt: Date.now(),
     };
 
-    setGameState(updatedState);
-    saveGameState(updatedState);
+    if (isComplete) {
+      completeGame(updatedState, false);
+    } else {
+      setGameState(updatedState);
+      saveGameState(updatedState);
+    }
 
     // Lock correctly-positioned countries; keep all placements on the line so the
     // player can nudge the remaining (unlocked) tokens for the next guess.
@@ -314,7 +357,7 @@ export default function GamePage() {
     if (!activeSession?.solved) return;
 
     if (statIndex === 2) {
-      completeGame(gameState.finalScore ?? gameState.runningScore);
+      setPageStatus('complete');
       return;
     }
 
@@ -331,6 +374,21 @@ export default function GamePage() {
     setLocked({ ...EMPTY_LOCKS });
     setAnnouncement('');
     setRoundCompleteEffect(false);
+  }
+
+  if (showStats) {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-4">
+        <StatsView
+          history={statsHistory}
+          currentDateUTC={effectiveDate}
+          currentPuzzleNumber={puzzleNumber}
+          currentResult={currentResult}
+          persistenceStatus={persistenceStatus}
+          onClose={() => setShowStats(false)}
+        />
+      </main>
+    );
   }
 
   // ── Loading ──────────────────────────────────────────────────────────────────
@@ -439,6 +497,7 @@ export default function GamePage() {
           >
             Try Again
           </button>
+          <button type="button" onClick={() => setShowStats(true)} className="mt-3 text-sm underline">View daily stats</button>
           <div
             className="w-full h-px mt-6"
             style={{ background: 'linear-gradient(90deg, transparent, rgba(232,197,71,0.2), transparent)' }}
@@ -470,7 +529,13 @@ export default function GamePage() {
         }}
       >
         <LiveRegion message={announcement} />
-        <ResultCard state={gameState} puzzleNumber={puzzleNumber} puzzle={puzzle} />
+        <button type="button" onClick={() => setShowStats(true)} className="mb-4 min-h-[var(--touch-min)] rounded-lg px-3 text-sm underline">View daily stats</button>
+        <ResultCard
+          state={gameState}
+          puzzleNumber={puzzleNumber}
+          puzzle={puzzle}
+          onDailyStats={() => setShowStats(true)}
+        />
         {IS_DEV && (
           <DevPanel
             currentDate={effectiveDate}
@@ -617,6 +682,7 @@ export default function GamePage() {
           >
             WorldOrder
           </h1>
+          <button type="button" onClick={() => setShowStats(true)} className="mt-3 min-h-[var(--touch-min)] rounded-lg px-3 text-xs underline">View daily stats</button>
           <div
             className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold tracking-[0.15em] uppercase mt-2"
             style={{

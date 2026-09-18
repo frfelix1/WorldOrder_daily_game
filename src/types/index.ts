@@ -111,6 +111,21 @@ export interface PlayerStats {
   scoreDistribution: Record<string, number>;
 }
 
+export interface DailyResult {
+  version: 1;
+  puzzleNumber: number;
+  dateUTC: string;
+  completed: true;
+  finalScore: number | null;
+}
+
+export type StatsStorageStatus = 'ready' | 'empty' | 'unavailable' | 'corrupt' | 'unsupported';
+
+export interface StatsHistory {
+  records: DailyResult[];
+  storageStatus: StatsStorageStatus;
+}
+
 // Result card (derived, not stored)
 
 export type EmojiRow = string; // e.g. "🟩🟥🟩🟥🟩"

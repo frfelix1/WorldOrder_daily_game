@@ -10,6 +10,7 @@ interface ResultCardProps {
   state: GameState;
   puzzleNumber: number;
   puzzle: PuzzleFile;
+  onDailyStats?: () => void;
 }
 
 // Deterministic confetti pieces (no Math.random() to avoid hydration issues)
@@ -95,7 +96,7 @@ function PerformanceBadge({ perf }: { perf: ReturnType<typeof performanceLabel> 
   );
 }
 
-export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
+export function ResultCard({ state, puzzleNumber, puzzle, onDailyStats }: ResultCardProps) {
   const [shareState, setShareState] = useState<'idle' | 'copied' | 'error'>('idle');
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -108,13 +109,7 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
   const [displayScore, setDisplayScore] = useState(finalScore);
 
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    let intervalId: ReturnType<typeof setInterval>;
-
-    // Start confetti after brief delay
-    const confettiTimeout = setTimeout(() => setShowConfetti(true), 200);
-
-    timeoutId = setTimeout(() => {
+    const timeoutId: ReturnType<typeof setTimeout> = setTimeout(() => {
       setDisplayScore(0);
       let current = 0;
       const step = Math.max(1, Math.ceil(finalScore / 50));
@@ -124,6 +119,10 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
         if (current >= finalScore) clearInterval(intervalId);
       }, 25);
     }, 400);
+    let intervalId: ReturnType<typeof setInterval>;
+
+    // Start confetti after brief delay
+    const confettiTimeout = setTimeout(() => setShowConfetti(true), 200);
 
     return () => {
       clearTimeout(timeoutId);
@@ -374,57 +373,57 @@ export function ResultCard({ state, puzzleNumber, puzzle }: ResultCardProps) {
           Puzzle #{puzzleNumber}
         </p>
 
-        {/* Share button */}
-        <button
-          data-testid="share-btn"
-          onClick={handleShare}
-          aria-label="Share your result"
-          className="animate-slide-up-fade"
+        {/* Results actions */}
+        <div
+          data-testid="results-actions"
+          className="animate-slide-up-fade flex w-full gap-2 rounded-[14px] bg-[linear-gradient(135deg,var(--gold-dim),var(--gold),var(--gold-bright))] p-px"
           style={{
             animationDelay: '450ms',
-            width: '100%',
-            padding: '16px',
-            minHeight: 'var(--touch-min)',
-            fontWeight: 700,
-            borderRadius: '14px',
-            fontSize: '13px',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            fontFamily: 'var(--font-cinzel)',
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-            background: shareState !== 'idle'
-              ? 'linear-gradient(135deg, #00c070, var(--success))'
-              : `linear-gradient(135deg, var(--gold-dim), var(--gold), var(--gold-bright))`,
-            color: '#000',
-            border: shareState !== 'idle'
-              ? '1px solid rgba(0,232,150,0.4)'
-              : '1px solid rgba(245,215,110,0.4)',
-            boxShadow: shareState !== 'idle'
-              ? '0 0 24px rgba(0,232,150,0.4)'
-              : `0 0 24px rgba(232,197,71,0.3), 0 4px 16px rgba(0,0,0,0.4)`,
-          }}
-          onMouseEnter={(e) => {
-            if (shareState === 'idle') {
-              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 36px rgba(232,197,71,0.5), 0 8px 24px rgba(0,0,0,0.4)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = shareState !== 'idle'
-              ? '0 0 24px rgba(0,232,150,0.4)'
-              : '0 0 24px rgba(232,197,71,0.3), 0 4px 16px rgba(0,0,0,0.4)';
-          }}
-          onMouseDown={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)';
-          }}
-          onMouseUp={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
           }}
         >
-          {shareState === 'copied' ? 'Copied!' : shareState === 'error' ? 'Copy failed' : 'Share Result'}
-        </button>
+          <button
+            data-testid="share-btn"
+            onClick={handleShare}
+            aria-label="Share your result"
+            className="min-h-[var(--touch-min)] flex-1 rounded-[13px] px-2 py-4 text-[13px] font-bold uppercase tracking-[0.2em]"
+            style={{
+              transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+              background: shareState !== 'idle' ? 'linear-gradient(135deg, #00c070, var(--success))' : 'transparent',
+              color: '#000',
+              border: shareState !== 'idle' ? '1px solid rgba(0,232,150,0.4)' : '1px solid transparent',
+              boxShadow: shareState !== 'idle' ? '0 0 24px rgba(0,232,150,0.4)' : 'none',
+            }}
+            onMouseEnter={(e) => {
+              if (shareState === 'idle') (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
+            }}
+            onMouseDown={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)';
+            }}
+            onMouseUp={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
+            }}
+          >
+            {shareState === 'copied' ? 'Copied!' : shareState === 'error' ? 'Copy failed' : 'Share Result'}
+          </button>
+          <button
+            type="button"
+            onClick={onDailyStats}
+            aria-label="Daily Stats"
+            className="min-h-[var(--touch-min)] flex-1 rounded-[13px] px-2 py-4 text-[13px] font-bold uppercase tracking-[0.2em]"
+            style={{
+              transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
+              background: 'transparent',
+              color: '#000',
+              border: '1px solid transparent',
+              boxShadow: 'none',
+            }}
+          >
+            Daily Stats
+          </button>
+        </div>
 
         {/* Bottom decorative line */}
         <div

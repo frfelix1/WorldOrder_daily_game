@@ -1,6 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { loadGameState, saveGameState, loadPlayerStats, savePlayerStats } from '../../src/lib/game-state';
-import type { GameState, PlayerStats } from '../../src/types';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  loadGameState,
+  saveGameState,
+  loadPlayerStats,
+  savePlayerStats,
+  loadStatsHistory,
+  saveDailyResult,
+  repairDailyResult,
+} from '../../src/lib/game-state';
+import type { DailyResult, GameState, PlayerStats } from '../../src/types';
 
 const PUZZLE_NUMBER = 100;
 
@@ -131,5 +139,78 @@ describe('rotation scenarios (US4)', () => {
     const loaded2 = loadGameState(PUZZLE_NUMBER);
     // Both are separate objects parsed from JSON
     expect(loaded1).not.toBe(loaded2);
+  });
+});
+
+describe('daily stats history', () => {
+  const result = (puzzleNumber: number, finalScore: number | null = 800): DailyResult => ({
+    version: 1,
+    puzzleNumber,
+    dateUTC: '2026-05-22',
+    completed: true,
+    finalScore,
+  });
+
+  it('starts empty and orders valid records newest first', () => {
+    saveDailyResult(result(2));
+    saveDailyResult({ ...result(1), dateUTC: '2026-05-21' });
+
+    expect(loadStatsHistory()).toEqual({
+      records: [result(2), { ...result(1), dateUTC: '2026-05-21' }],
+      storageStatus: 'ready',
+    });
+  });
+
+  it('replaces only the same puzzle day', () => {
+    saveDailyResult(result(1, 500));
+    saveDailyResult(result(1, 900));
+
+    expect(loadStatsHistory().records).toHaveLength(1);
+    expect(loadStatsHistory().records[0].finalScore).toBe(900);
+  });
+
+  it('retains an identifiable day when its score is invalid', () => {
+    localStorage.setItem('worldorder_daily_1', JSON.stringify({
+      ...result(1),
+      finalScore: 'bad',
+    }));
+
+    expect(loadStatsHistory().records).toEqual([{ ...result(1), finalScore: null }]);
+    expect(loadStatsHistory().storageStatus).toBe('corrupt');
+  });
+
+  it('does not overwrite an unsupported version', () => {
+    localStorage.setItem('worldorder_daily_1', JSON.stringify({ ...result(1), version: 2, finalScore: 100 }));
+
+    expect(saveDailyResult(result(1, 900))).toBe(false);
+    expect(JSON.parse(localStorage.getItem('worldorder_daily_1')!).version).toBe(2);
+    expect(loadStatsHistory().storageStatus).toBe('unsupported');
+  });
+
+  it('ignores malformed entries without losing valid unrelated days', () => {
+    localStorage.setItem('worldorder_daily_1', '{bad');
+    saveDailyResult({ ...result(2), dateUTC: '2026-05-23' });
+
+    expect(loadStatsHistory().records).toHaveLength(1);
+    expect(loadStatsHistory().records[0].puzzleNumber).toBe(2);
+    expect(loadStatsHistory().storageStatus).toBe('corrupt');
+  });
+
+  it('reports storage failures without throwing', () => {
+    const getItem = vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+
+    expect(loadStatsHistory()).toEqual({ records: [], storageStatus: 'unavailable' });
+    getItem.mockRestore();
+  });
+
+  it('repairs a completed state without changing aggregate stats', () => {
+    const state = makeGameState(1, 'complete');
+    state.dateUTC = '2026-05-22';
+    state.finalScore = 700;
+
+    expect(repairDailyResult(state)).toBe(true);
+    expect(loadStatsHistory().records[0].finalScore).toBe(700);
   });
 });

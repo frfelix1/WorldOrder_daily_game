@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ResultCard } from '../../src/components/game/ResultCard';
 import type { GameState, PuzzleFile } from '../../src/types';
@@ -88,6 +88,35 @@ describe('ResultCard', () => {
     render(<ResultCard state={mockState} puzzleNumber={42} puzzle={mockPuzzle} />);
     const btn = screen.getByRole('button', { name: /share/i });
     expect(btn).toBeInTheDocument();
+  });
+
+  it('renders the Daily Stats action and invokes its callback', () => {
+    const onDailyStats = vi.fn();
+    render(<ResultCard state={mockState} puzzleNumber={42} puzzle={mockPuzzle} onDailyStats={onDailyStats} />);
+
+    expect(screen.getByRole('button', { name: 'Daily Stats' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Daily Stats' }));
+    expect(onDailyStats).toHaveBeenCalledOnce();
+  });
+
+  it('groups the actions side-by-side with equal flexible widths and a small gap', () => {
+    render(<ResultCard state={mockState} puzzleNumber={42} puzzle={mockPuzzle} onDailyStats={vi.fn()} />);
+
+    const group = screen.getByTestId('results-actions');
+    const buttons = screen.getAllByRole('button').filter((button) =>
+      ['Share Result', 'Daily Stats'].includes(button.textContent ?? ''),
+    );
+    expect(group).toHaveClass('flex', 'gap-2');
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]).toHaveClass('flex-1', 'min-h-[var(--touch-min)]');
+    expect(buttons[1]).toHaveClass('flex-1', 'min-h-[var(--touch-min)]');
+    expect(buttons.map((button) => button.textContent)).toEqual(['Share Result', 'Daily Stats']);
+  });
+
+  it('keeps the existing dark-to-bright gold gradient across the action group', () => {
+    render(<ResultCard state={mockState} puzzleNumber={42} puzzle={mockPuzzle} onDailyStats={vi.fn()} />);
+
+    expect(screen.getByTestId('results-actions')).toHaveClass('bg-[linear-gradient(135deg,var(--gold-dim),var(--gold),var(--gold-bright))]');
   });
 
   it('calls navigator.clipboard.writeText with share text on share click', async () => {
