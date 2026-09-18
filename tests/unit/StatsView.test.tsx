@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { StatsView } from '../../src/components/game/StatsView';
 import type { DailyResult, StatsHistory } from '../../src/types';
 
@@ -17,6 +17,17 @@ const history = (records: DailyResult[], storageStatus: StatsHistory['storageSta
 });
 
 describe('StatsView', () => {
+  it('renders an accessible close button that returns to the game', () => {
+    const onClose = vi.fn();
+    render(<StatsView history={history([], 'empty')} currentDateUTC="2026-05-22" currentPuzzleNumber={2} onClose={onClose} />);
+
+    const closeButton = screen.getByRole('button', { name: 'Close daily stats' });
+    expect(closeButton).toHaveTextContent('X');
+    expect(closeButton).toHaveClass('text-red-400');
+    fireEvent.click(closeButton);
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
   it('renders a deterministic loading state before browser history is available', () => {
     render(<StatsView history={null} currentDateUTC="2026-05-22" currentPuzzleNumber={2} />);
     expect(screen.getByRole('heading', { name: /daily stats/i })).toBeInTheDocument();

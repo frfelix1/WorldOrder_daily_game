@@ -376,7 +376,7 @@ export function ResultCard({ state, puzzleNumber, puzzle, onDailyStats }: Result
         {/* Results actions */}
         <div
           data-testid="results-actions"
-          className="animate-slide-up-fade flex w-full gap-2 rounded-[14px] bg-[linear-gradient(135deg,var(--gold-dim),var(--gold),var(--gold-bright))] p-px"
+          className="animate-slide-up-fade flex w-full gap-2 rounded-[14px] bg-black p-px"
           style={{
             animationDelay: '450ms',
           }}
@@ -388,7 +388,7 @@ export function ResultCard({ state, puzzleNumber, puzzle, onDailyStats }: Result
             className="min-h-[var(--touch-min)] flex-1 rounded-[13px] px-2 py-4 text-[13px] font-bold uppercase tracking-[0.2em]"
             style={{
               transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-              background: shareState !== 'idle' ? 'linear-gradient(135deg, #00c070, var(--success))' : 'transparent',
+              background: shareState !== 'idle' ? 'linear-gradient(135deg, #00c070, var(--success))' : 'linear-gradient(135deg, var(--gold-dim), var(--gold))',
               color: '#000',
               border: shareState !== 'idle' ? '1px solid rgba(0,232,150,0.4)' : '1px solid transparent',
               boxShadow: shareState !== 'idle' ? '0 0 24px rgba(0,232,150,0.4)' : 'none',
@@ -415,7 +415,7 @@ export function ResultCard({ state, puzzleNumber, puzzle, onDailyStats }: Result
             className="min-h-[var(--touch-min)] flex-1 rounded-[13px] px-2 py-4 text-[13px] font-bold uppercase tracking-[0.2em]"
             style={{
               transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-              background: 'transparent',
+              background: 'linear-gradient(135deg, var(--gold), var(--gold-bright))',
               color: '#000',
               border: '1px solid transparent',
               boxShadow: 'none',

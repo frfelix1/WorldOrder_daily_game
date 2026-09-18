@@ -106,17 +106,21 @@ describe('ResultCard', () => {
     const buttons = screen.getAllByRole('button').filter((button) =>
       ['Share Result', 'Daily Stats'].includes(button.textContent ?? ''),
     );
-    expect(group).toHaveClass('flex', 'gap-2');
+    expect(group).toHaveClass('flex', 'gap-2', 'bg-black');
     expect(buttons).toHaveLength(2);
     expect(buttons[0]).toHaveClass('flex-1', 'min-h-[var(--touch-min)]');
     expect(buttons[1]).toHaveClass('flex-1', 'min-h-[var(--touch-min)]');
     expect(buttons.map((button) => button.textContent)).toEqual(['Share Result', 'Daily Stats']);
   });
 
-  it('keeps the existing dark-to-bright gold gradient across the action group', () => {
+  it('keeps the existing dark-to-bright gold gradient across separate buttons', () => {
     render(<ResultCard state={mockState} puzzleNumber={42} puzzle={mockPuzzle} onDailyStats={vi.fn()} />);
 
-    expect(screen.getByTestId('results-actions')).toHaveClass('bg-[linear-gradient(135deg,var(--gold-dim),var(--gold),var(--gold-bright))]');
+    const buttons = screen.getAllByRole('button').filter((button) =>
+      ['Share Result', 'Daily Stats'].includes(button.textContent ?? ''),
+    );
+    expect(buttons[0]).toHaveStyle({ background: 'linear-gradient(135deg, var(--gold-dim), var(--gold))' });
+    expect(buttons[1]).toHaveStyle({ background: 'linear-gradient(135deg, var(--gold), var(--gold-bright))' });
   });
 
   it('calls navigator.clipboard.writeText with share text on share click', async () => {

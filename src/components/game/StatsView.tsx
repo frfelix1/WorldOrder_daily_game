@@ -39,7 +39,17 @@ export function StatsView({
     <section aria-labelledby="daily-stats-heading" className="w-full max-w-2xl rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
       <div className="mb-5 flex items-center justify-between gap-4">
         <h2 id="daily-stats-heading" className="text-lg font-bold tracking-[0.16em] uppercase">Daily Stats</h2>
-        {onClose && <button type="button" onClick={onClose} className="min-h-[var(--touch-min)] rounded-lg px-3 text-sm underline">Back to game</button>}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close daily stats"
+            title="Close"
+            className="min-h-[var(--touch-min)] min-w-[var(--touch-min)] rounded-lg px-3 text-2xl font-semibold leading-none text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-red-400"
+          >
+            X
+          </button>
+        )}
       </div>
 
       {!history && <p role="status">Loading history...</p>}

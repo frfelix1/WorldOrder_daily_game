@@ -529,7 +529,6 @@ export default function GamePage() {
         }}
       >
         <LiveRegion message={announcement} />
-        <button type="button" onClick={() => setShowStats(true)} className="mb-4 min-h-[var(--touch-min)] rounded-lg px-3 text-sm underline">View daily stats</button>
         <ResultCard
           state={gameState}
           puzzleNumber={puzzleNumber}
