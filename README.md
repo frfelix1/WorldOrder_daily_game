@@ -2,6 +2,8 @@
 
 WorldOrder is a small daily geography game. Each puzzle asks you to place five countries in order on a line for three different statistics. The puzzle changes each day, and your score is based on the accuracy of your placements and the number of attempts.
 
+Play the hosted version at [world-order-daily-game.vercel.app](https://world-order-daily-game.vercel.app/). The application is deployed on [Vercel](https://vercel.com/).
+
 The game is built with Next.js, React, and TypeScript. Country and statistic data lives in `data/`, while browser storage is used for local game progress and statistics.
 
 ## Why This Exists
