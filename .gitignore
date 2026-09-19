@@ -48,5 +48,5 @@ next-env.d.ts
 /public/flags/
 
 #AI Tools
-/AGENTS.md
-/CLAUDE.md
+AGENTS.md
+CLAUDE.md
